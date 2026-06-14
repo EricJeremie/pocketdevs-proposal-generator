@@ -288,6 +288,55 @@ select.input { appearance: none; -webkit-appearance: none; background-image: url
 .p-docfooter b { color: var(--brand); font-weight: 700; }
 
 /* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .composer {
+    position: static;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    padding: 16px;
+  }
+  .appbar {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .grid2, .p-parties {
+    grid-template-columns: 1fr;
+  }
+  .appbar__title {
+    display: none;
+  }
+  .stage {
+    padding: 16px 12px 40px;
+  }
+  .proposal {
+    padding: 40px 20px 50px;
+    border-radius: 6px;
+  }
+  .p-cover__top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .p-eyebrow {
+    text-align: left;
+  }
+  .p-title {
+    font-size: 26px;
+  }
+  .p-sign__line {
+    width: 100%;
+  }
+}
+
+/* ============================================================
    PRINT
    ============================================================ */
 @media print {
