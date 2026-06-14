@@ -115,6 +115,7 @@ button, input, textarea, select { font-family: inherit; }
   box-shadow: var(--shadow); padding: 0.25rem; display: flex; flex-direction: column;
   z-index: 200;
 }
+.user-menu__dropdown[hidden] { display: none; }
 .user-menu__item {
   display: block; width: 100%; text-align: left; padding: 0.5rem 0.75rem;
   border-radius: 6px; border: none; background: none; cursor: pointer;
