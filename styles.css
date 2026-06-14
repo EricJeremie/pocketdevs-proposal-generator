@@ -151,4 +151,78 @@ body {
 .status--error { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 .status--ok { background: rgba(16, 185, 129, 0.1); color: #10b981; }
 
-@media print { .no-print { display: none !important; } .stage { padding: 0; background: white; } .paper-wrap { box-shadow: none; margin: 0; width: 100%; } }
+/* ---- Proposal paper elements (light paper) ---- */
+.p-cover__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; }
+.p-eyebrow { text-align: right; font-size: 0.65rem; letter-spacing: 0.04em; text-transform: uppercase; color: #64748b; line-height: 1.7; }
+.p-eyebrow b { color: #0f172a; }
+.p-kicker { display: inline-block; margin-top: 1.5rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--rausch); }
+.p-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 1.5rem 0 0; padding-top: 1.25rem; border-top: 1px solid #e2e8f0; }
+.p-party__label { font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; color: #94a3b8; font-weight: 700; margin-bottom: 0.35rem; }
+.p-party__name { font-size: 0.95rem; font-weight: 700; color: #0f172a; }
+.p-party__meta { font-size: 0.78rem; color: #64748b; }
+.p-section { margin-top: 1.75rem; }
+.p-lede { color: #334155; }
+.p-section p { margin: 0 0 0.6rem; }
+.p-list { list-style: none; margin: 0.4rem 0 0; padding: 0; }
+.p-list li { position: relative; padding-left: 1.1rem; margin: 0.4rem 0; color: #334155; }
+.p-list li::before { content: ""; position: absolute; left: 0.1rem; top: 0.55em; width: 6px; height: 6px; border-radius: 50%; background: var(--rausch); }
+.p-list--check li::before { border-radius: 2px; }
+.p-scope__group { margin: 0 0 1rem; }
+.p-scope__phase { font-weight: 700; color: #0f172a; margin-bottom: 0.35rem; }
+.p-table__total td { border-top: 2px solid #0f172a; font-weight: 800; color: #0f172a; }
+.p-note { margin-top: 0.5rem; font-size: 0.72rem; color: #64748b; font-style: italic; }
+.p-term { margin: 0 0 0.65rem; color: #334155; }
+.p-term__h { font-weight: 700; color: #0f172a; }
+.p-sign { margin-top: 2.25rem; padding-top: 1.25rem; border-top: 1px solid #e2e8f0; }
+.p-sign__intro { color: #64748b; font-size: 0.82rem; margin: 0 0 1.75rem; max-width: 60ch; }
+.p-sign__line { width: 260px; max-width: 100%; border-bottom: 1.5px solid #0f172a; height: 1.5rem; }
+.p-sign__name { margin-top: 0.5rem; font-weight: 700; color: #0f172a; }
+.p-sign__title { font-size: 0.78rem; color: #64748b; }
+.p-docfooter { margin-top: 2.25rem; padding-top: 0.9rem; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; font-size: 0.68rem; color: #94a3b8; }
+.p-docfooter b { color: var(--rausch); }
+.empty { text-align: center; color: #64748b; padding: 3rem 1rem; }
+.empty__logo { height: 30px; margin-bottom: 1.25rem; }
+.empty h2 { font-size: 1.1rem; color: #0f172a; margin-bottom: 0.5rem; }
+.empty p { font-size: 0.85rem; max-width: 44ch; margin: 0 auto; }
+
+/* ---- Print ---- */
+@media print {
+  .no-print { display: none !important; }
+  .layout { display: block; }
+  .stage { padding: 0; background: white; }
+  .paper-wrap { box-shadow: none; margin: 0; width: 100%; min-height: 0; padding: 0; }
+  .p-section, .p-scope__group, .p-term, .p-sign, .p-party { break-inside: avoid; }
+  .p-table tr { break-inside: avoid; }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 920px) {
+  .layout { grid-template-columns: 1fr; min-height: 0; }
+  .composer {
+    max-height: none; overflow: visible;
+    border-right: none; border-bottom: 1px solid var(--border);
+  }
+  .stage { padding: 1.5rem 1rem; }
+  .paper-wrap { width: 100%; min-height: auto; padding: 32px 30px; }
+}
+
+@media (max-width: 560px) {
+  .appbar { flex-wrap: wrap; gap: 0.5rem; padding: 0.75rem 1rem; }
+  .appbar__title, .appbar__divider { display: none; }
+  .appbar__actions { gap: 0.4rem; }
+  .appbar__actions .btn { padding: 0.5rem 0.7rem; font-size: 0.8rem; }
+  .composer { padding: 1rem; }
+  .grid2 { grid-template-columns: 1fr; }
+  .stage { padding: 1rem 0.6rem; }
+  .paper-wrap { padding: 22px 16px; }
+  .proposal { font-size: 10.5pt; }
+  .p-cover__top { flex-direction: column; gap: 0.75rem; }
+  .p-eyebrow { text-align: left; }
+  .p-title { font-size: 1.7rem; margin-bottom: 1.25rem; }
+  .p-parties { grid-template-columns: 1fr; gap: 1rem; }
+  .p-table { font-size: 0.78rem; }
+  .p-table th, .p-table td { padding: 0.45rem 0.4rem; }
+  .modal__content { max-width: 92vw; }
+}

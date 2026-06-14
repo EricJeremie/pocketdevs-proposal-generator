@@ -5,7 +5,7 @@
    ============================================================ */
 'use strict';
 
-import { supabase, getSession, saveProposal, fetchUserProposals } from './supabase.js';
+import { getSession, signIn, signUp, signOut, saveProposal, fetchUserProposals } from './supabase.js';
 
 /* ---------- Constants ---------- */
 const MODEL = 'claude-opus-4-8';
@@ -47,7 +47,7 @@ Rules:
   change requests, IP & internal-use license, warranty/support boundary, and validity of the quotation.
 - Write in PocketDevs' house voice.
 
-\${STYLE_EXEMPLAR}
+${STYLE_EXEMPLAR}
 
 Return only the structured proposal. Do not include commentary outside the JSON.`;
 
@@ -123,7 +123,7 @@ const esc = (s) => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;');
 const paras = (s) => String(s || '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
-  .map((p) => `<p>\${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
+  .map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
 
 /* ---------- State ---------- */
 let pdfBase64 = null;
@@ -134,13 +134,13 @@ function setStatus(kind, html) {
   const el = $('status');
   if (!html) { el.hidden = true; el.innerHTML = ''; return; }
   el.hidden = false;
-  el.className = 'status' + (kind ? \` status--\${kind}\` : '');
+  el.className = 'status' + (kind ? ` status--${kind}` : '');
   el.innerHTML = html;
 }
 
 function showToast(msg, kind = 'info') {
   const toast = document.createElement('div');
-  toast.className = \`toast toast--\${kind}\`;
+  toast.className = `toast toast--${kind}`;
   toast.textContent = msg;
   document.body.appendChild(toast);
   setTimeout(() => toast.classList.add('toast--visible'), 10);
@@ -179,7 +179,7 @@ function initKey() {
 /* ---------- File handling ---------- */
 function handleFile(file) {
   if (!file) return;
-  if (file.type !== 'application/pdf' && !/\\.pdf$/i.test(file.name)) {
+  if (file.type !== 'application/pdf' && !/\.pdf$/i.test(file.name)) {
     setStatus('error', 'Please choose a PDF file.');
     return;
   }
@@ -189,7 +189,7 @@ function handleFile(file) {
     pdfName = file.name;
     const dz = $('dropzone');
     dz.classList.add('has-file');
-    $('fileName').textContent = \`\${file.name} · \${(file.size / 1024).toFixed(0)} KB\`;
+    $('fileName').textContent = `${file.name} · ${(file.size / 1024).toFixed(0)} KB`;
     setStatus('', '');
   };
   reader.onerror = () => setStatus('error', 'Could not read that file.');
@@ -198,7 +198,7 @@ function handleFile(file) {
 
 function handleLogo(file) {
   if (!file) return;
-  if (!/^image\\//.test(file.type)) { setStatus('error', 'Please choose an image file (PNG, SVG, JPG, or WebP).'); return; }
+  if (!/^image\//.test(file.type)) { setStatus('error', 'Please choose an image file (PNG, SVG, JPG, or WebP).'); return; }
   if (file.size > 1.5 * 1024 * 1024) { setStatus('error', 'That logo is over 1.5 MB — please use a smaller file.'); return; }
   const reader = new FileReader();
   reader.onload = () => { localStorage.setItem(LS_LOGO, String(reader.result)); applyLogo(); setStatus('ok', 'Logo updated — it now appears on every proposal.'); };
@@ -231,18 +231,8 @@ function collectIntake() {
 
 /* ---------- Generate ---------- */
 async function generate() {
-  let session;
-  try {
-    session = await getSession();
-  } catch (e) {
-    showToast('Failed to check auth session.', 'error');
-  }
-
-  if (!session) {
-    showAuthModal();
-    return;
-  }
-
+  // Login is OPTIONAL — generating never requires an account. If signed in, the
+  // result is saved to history; if not, it's still generated and downloadable.
   const key = localStorage.getItem(LS_KEY) || $('apiKey').value.trim();
   if (!key) {
     $('settingsPanel').hidden = false;
@@ -282,7 +272,7 @@ async function generate() {
       paymentDetails: intake.paymentDetails || null,
     }, null, 2) +
     (intake.notes ? '\\n\\nEXTRA INSTRUCTIONS:\\n' + intake.notes : '') +
-    \`\\n\\nFORMATTING: Write every monetary amount with the "\${intake.currencySymbol || intake.currency}" symbol (currency \${intake.currency}), e.g. "\${intake.currencySymbol || ''}120,000". Use \${intake.locale} conventions for dates and number grouping.\` +
+    `\\n\\nFORMATTING: Write every monetary amount with the "${intake.currencySymbol || intake.currency}" symbol (currency ${intake.currency}), e.g. "${intake.currencySymbol || ''}120,000". Use ${intake.locale} conventions for dates and number grouping.` +
     '\\n\\nReturn the full structured proposal.';
 
   const content = [];
@@ -314,9 +304,9 @@ async function generate() {
     const data = await res.json();
 
     if (!res.ok) {
-      const msg = data && data.error ? data.error.message : \`HTTP \${res.status}\`;
+      const msg = data && data.error ? data.error.message : `HTTP ${res.status}`;
       if (res.status === 401) { $('settingsPanel').hidden = false; }
-      setStatus('error', \`Generation failed: \${esc(msg)}\`);
+      setStatus('error', `Generation failed: ${esc(msg)}`);
       return;
     }
 
@@ -328,15 +318,21 @@ async function generate() {
     catch (e) { setStatus('error', 'Response was not valid JSON.'); return; }
 
     render(proposal);
-    const { error: saveErr } = await saveProposal(proposal);
-    if (saveErr) {
-      console.warn('Could not save proposal to history:', saveErr);
-      showToast('Proposal generated but failed to save to history.', 'info');
-    }
-    refreshHistory();
-    setStatus('ok', \`Proposal generated. Click any text to edit, then <b>Download PDF</b>.\`);
+    // Best-effort save to history (only when signed in; never blocks the result).
+    try {
+      const session = await getSession();
+      if (session) {
+        const { error: saveErr } = await saveProposal(proposal);
+        if (saveErr && saveErr !== 'not-authenticated' && saveErr !== 'offline') {
+          console.warn('Could not save proposal to history:', saveErr);
+        } else if (!saveErr) {
+          refreshHistory();
+        }
+      }
+    } catch (e) { /* history is optional — ignore */ }
+    setStatus('ok', `Proposal generated. Click any text to edit, then <b>Download PDF</b>.`);
   } catch (err) {
-    setStatus('error', \`Network error: \${esc(err.message)}.\`);
+    setStatus('error', `Network error: ${esc(err.message)}.`);
   } finally {
     btn.disabled = false;
   }
@@ -344,87 +340,87 @@ async function generate() {
 
 /* ---------- Render ---------- */
 function sectionHead(n, title) {
-  return \`<div class="p-section__head"><span class="p-section__num">\${String(n).padStart(2, '0')}</span>\` +
-    \`<h2 class="p-section__title">\${esc(title)}</h2></div>\`;
+  return `<div class="p-section__head"><span class="p-section__num">${String(n).padStart(2, '0')}</span>` +
+    `<h2 class="p-section__title">${esc(title)}</h2></div>`;
 }
 function list(items, mod) {
   if (!items || !items.length) return '';
-  return \`<ul class="p-list\${mod ? ' ' + mod : ''}">\${items.map((i) => \`<li>\${esc(i)}</li>\`).join('')}</ul>\`;
+  return `<ul class="p-list${mod ? ' ' + mod : ''}">${items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`;
 }
 
 function render(d) {
   if (!d) return;
   const m = d.meta || {}, c = d.client || {}, pb = d.preparedBy || {};
-  const cover = \`
+  const cover = `
     <header class="p-cover">
       <div class="p-cover__top">
-        <img src="\${esc(currentLogo())}" alt="Logo" class="p-cover__logo js-logo" />
+        <img src="${esc(currentLogo())}" alt="Logo" class="p-cover__logo js-logo" />
         <div class="p-eyebrow">
-          <div class="js-doc-no"><b>\${esc(m.documentNumber || '[TBD]')}</b></div>
-          <div>Prepared \${esc(m.preparedDate || '[TBD]')}</div>
-          \${m.validUntil ? \`<div>Valid until \${esc(m.validUntil)}</div>\` : ''}
+          <div class="js-doc-no"><b>${esc(m.documentNumber || '[TBD]')}</b></div>
+          <div>Prepared ${esc(m.preparedDate || '[TBD]')}</div>
+          ${m.validUntil ? `<div>Valid until ${esc(m.validUntil)}</div>` : ''}
         </div>
       </div>
       <span class="p-kicker">Proposal</span>
-      <h1 class="p-title">\${esc(m.title || 'Project Proposal')}</h1>
+      <h1 class="p-title">${esc(m.title || 'Project Proposal')}</h1>
       <div class="p-parties">
         <div class="p-party">
           <div class="p-party__label">Prepared for</div>
-          <div class="p-party__name">\${esc(c.company || '[TBD]')}</div>
-          \${c.contactName ? \`<div class="p-party__meta">\${esc(c.contactName)}\${c.contactTitle ? ' · ' + esc(c.contactTitle) : ''}</div>\` : ''}
+          <div class="p-party__name">${esc(c.company || '[TBD]')}</div>
+          ${c.contactName ? `<div class="p-party__meta">${esc(c.contactName)}${c.contactTitle ? ' · ' + esc(c.contactTitle) : ''}</div>` : ''}
         </div>
         <div class="p-party">
           <div class="p-party__label">Prepared by</div>
-          <div class="p-party__name">\${esc(pb.company || 'PocketDevs')}</div>
-          <div class="p-party__meta">\${esc(pb.name || '')}\${pb.title ? ' · ' + esc(pb.title) : ''}</div>
+          <div class="p-party__name">${esc(pb.company || 'PocketDevs')}</div>
+          <div class="p-party__meta">${esc(pb.name || '')}${pb.title ? ' · ' + esc(pb.title) : ''}</div>
         </div>
       </div>
-    </header>\`;
+    </header>`;
 
   const sec = [];
-  sec.push(\`<section class="p-section">\${sectionHead(1, 'Executive Summary')}<div class="p-lede">\${paras(d.executiveSummary)}</div></section>\`);
+  sec.push(`<section class="p-section">${sectionHead(1, 'Executive Summary')}<div class="p-lede">${paras(d.executiveSummary)}</div></section>`);
   const so = d.solutionsOutline || {};
-  sec.push(\`<section class="p-section">\${sectionHead(2, 'Solutions Outline')}\${paras(so.summary)}\${list(so.points)}</section>\`);
-  sec.push(\`<section class="p-section">\${sectionHead(3, 'Objectives')}\${list(d.objectives)}</section>\`);
-  const scope = (d.scopeOfWork || []).map((g) => \`
+  sec.push(`<section class="p-section">${sectionHead(2, 'Solutions Outline')}${paras(so.summary)}${list(so.points)}</section>`);
+  sec.push(`<section class="p-section">${sectionHead(3, 'Objectives')}${list(d.objectives)}</section>`);
+  const scope = (d.scopeOfWork || []).map((g) => `
     <div class="p-scope__group">
-      <div class="p-scope__phase">\${esc(g.phase)}</div>
-      \${list(g.deliverables, 'p-list--check')}
-    </div>\`).join('');
-  sec.push(\`<section class="p-section">\${sectionHead(4, 'Full Scope of Work')}<div class="p-scope">\${scope}</div></section>\`);
-  const tl = (d.timeline || []).map((r) => \`<tr><td>\${esc(r.phase)}</td><td>\${esc(r.duration)}</td><td>\${esc(r.milestone)}</td></tr>\`).join('');
-  sec.push(\`<section class="p-section">\${sectionHead(5, 'Project Timeline')}
-    <table class="p-table"><thead><tr><th>Phase</th><th>Duration</th><th>Key milestone</th></tr></thead><tbody>\${tl}</tbody></table></section>\`);
+      <div class="p-scope__phase">${esc(g.phase)}</div>
+      ${list(g.deliverables, 'p-list--check')}
+    </div>`).join('');
+  sec.push(`<section class="p-section">${sectionHead(4, 'Full Scope of Work')}<div class="p-scope">${scope}</div></section>`);
+  const tl = (d.timeline || []).map((r) => `<tr><td>${esc(r.phase)}</td><td>${esc(r.duration)}</td><td>${esc(r.milestone)}</td></tr>`).join('');
+  sec.push(`<section class="p-section">${sectionHead(5, 'Project Timeline')}
+    <table class="p-table"><thead><tr><th>Phase</th><th>Duration</th><th>Key milestone</th></tr></thead><tbody>${tl}</tbody></table></section>`);
   const cost = d.cost || {};
-  const ci = (cost.lineItems || []).map((r) => \`<tr><td>\${esc(r.item)}</td><td>\${esc(r.basis)}</td><td class="num">\${esc(r.amount)}</td></tr>\`).join('');
+  const ci = (cost.lineItems || []).map((r) => `<tr><td>${esc(r.item)}</td><td>${esc(r.basis)}</td><td class="num">${esc(r.amount)}</td></tr>`).join('');
   if (d.meta.budget) {
-    sec.push(\`<section class="p-section">\${sectionHead(6, 'Project Cost')}<div class="p-lede"><p><strong>Proposed Budget:</strong> \${esc(d.meta.budget)}</p></div></section>\`);
+    sec.push(`<section class="p-section">${sectionHead(6, 'Project Cost')}<div class="p-lede"><p><strong>Proposed Budget:</strong> ${esc(d.meta.budget)}</p></div></section>`);
   } else {
-    sec.push(\`<section class="p-section">\${sectionHead(6, 'Project Cost')}
+    sec.push(`<section class="p-section">${sectionHead(6, 'Project Cost')}
     <table class="p-table"><thead><tr><th>Line item</th><th>Basis</th><th class="num">Amount</th></tr></thead>
-    <tbody>\${ci}\${cost.total ? \`<tr class="p-table__total"><td>Total</td><td></td><td class="num">\${esc(cost.total)}</td></tr>\` : ''}</tbody></table>
-    \${cost.notes ? \`<div class="p-note">\${esc(cost.notes)}</div>\` : ''}</section>\`);
+    <tbody>${ci}${cost.total ? `<tr class="p-table__total"><td>Total</td><td></td><td class="num">${esc(cost.total)}</td></tr>` : ''}</tbody></table>
+    ${cost.notes ? `<div class="p-note">${esc(cost.notes)}</div>` : ''}</section>`);
   }
-  const mp = (d.milestonesPayment || []).map((r) => \`<tr><td>\${esc(r.milestone)}</td><td class="num">\${esc(r.percentage)}</td><td class="num">\${esc(r.amount)}</td><td>\${esc(r.trigger)}</td></tr>\`).join('');
+  const mp = (d.milestonesPayment || []).map((r) => `<tr><td>${esc(r.milestone)}</td><td class="num">${esc(r.percentage)}</td><td class="num">${esc(r.amount)}</td><td>${esc(r.trigger)}</td></tr>`).join('');
   if (d.meta.paymentDetails) {
-    sec.push(\`<section class="p-section">\${sectionHead(7, 'Milestones and Payment Terms')}<div class="p-lede"><p>\${esc(d.meta.paymentDetails)}</p></div></section>\`);
+    sec.push(`<section class="p-section">${sectionHead(7, 'Milestones and Payment Terms')}<div class="p-lede"><p>${esc(d.meta.paymentDetails)}</p></div></section>`);
   } else {
-    sec.push(\`<section class="p-section">\${sectionHead(7, 'Milestones and Payment Terms')}
-    <table class="p-table"><thead><tr><th>Milestone</th><th class="num">%</th><th class="num">Amount</th><th>Trigger</th></tr></thead><tbody>\${mp}</tbody></table></section>\`);
+    sec.push(`<section class="p-section">${sectionHead(7, 'Milestones and Payment Terms')}
+    <table class="p-table"><thead><tr><th>Milestone</th><th class="num">%</th><th class="num">Amount</th><th>Trigger</th></tr></thead><tbody>${mp}</tbody></table></section>`);
   }
-  sec.push(\`<section class="p-section">\${sectionHead(8, 'Payment Options')}\${list(d.paymentOptions)}</section>\`);
+  sec.push(`<section class="p-section">${sectionHead(8, 'Payment Options')}${list(d.paymentOptions)}</section>`);
   const pls = d.postLaunchSupport || {};
-  sec.push(\`<section class="p-section">\${sectionHead(9, 'Post Launch Support')}\${paras(pls.summary)}\${list(pls.inclusions, 'p-list--check')}</section>\`);
-  const terms = (d.termsAndServices || []).map((t) => \`<p class="p-term"><span class="p-term__h">\${esc(t.heading)}:</span> <span class="p-term__b">\${esc(t.body)}</span></p>\`).join('');
-  sec.push(\`<section class="p-section">\${sectionHead(10, 'Terms and Services')}<div class="p-terms">\${terms}</div></section>\`);
-  const sign = \`
+  sec.push(`<section class="p-section">${sectionHead(9, 'Post Launch Support')}${paras(pls.summary)}${list(pls.inclusions, 'p-list--check')}</section>`);
+  const terms = (d.termsAndServices || []).map((t) => `<p class="p-term"><span class="p-term__h">${esc(t.heading)}:</span> <span class="p-term__b">${esc(t.body)}</span></p>`).join('');
+  sec.push(`<section class="p-section">${sectionHead(10, 'Terms and Services')}<div class="p-terms">${terms}</div></section>`);
+  const sign = `
     <section class="p-sign">
       <p class="p-sign__intro">To proceed, the client may confirm acceptance in writing. PocketDevs will then issue the reservation invoice and schedule a short scoping call to align on timeline, deliverables, and any final details.</p>
       <div class="p-sign__line"></div>
-      <div class="p-sign__name">\${esc(pb.name || 'Eric Jeremie Rotaquio')}</div>
-      <div class="p-sign__title">\${esc(pb.title || 'Chief Executive Officer, PocketDevs')}</div>
-    </section>\`;
-  const footer = \`<div class="p-docfooter"><span><b>PocketDevs</b></span><span>Confidential</span><span>www.pocketdevs.ph</span></div>\`;
+      <div class="p-sign__name">${esc(pb.name || 'Eric Jeremie Rotaquio')}</div>
+      <div class="p-sign__title">${esc(pb.title || 'Chief Executive Officer, PocketDevs')}</div>
+    </section>`;
+  const footer = `<div class="p-docfooter"><span><b>PocketDevs</b></span><span>Confidential</span><span>www.pocketdevs.ph</span></div>`;
 
   const art = $('proposal');
   art.innerHTML = cover + sec.join('') + sign + footer;
@@ -449,9 +445,9 @@ async function handleAuth(e) {
   const isSignUp = e.submitter.dataset.mode === 'signup';
 
   try {
-    const { data, error } = isSignUp 
-      ? await supabase.auth.signUp({ email, password })
-      : await supabase.auth.signInWithPassword({ email, password });
+    const { error } = isSignUp
+      ? await signUp(email, password)
+      : await signIn(email, password);
 
     if (error) {
       showToast(error.message, 'error');
@@ -472,7 +468,7 @@ async function updateAuthState() {
     if (session) {
       btn.textContent = session.user.email.split('@')[0];
       btn.onclick = async () => {
-        await supabase.auth.signOut();
+        await signOut();
         updateAuthState();
       };
       refreshHistory();
@@ -495,12 +491,12 @@ async function refreshHistory() {
       list.innerHTML = '<p class="card__hint">No proposals saved yet.</p>';
       return;
     }
-    list.innerHTML = items.map(p => \`
-      <div class="history-item" data-id="\${p.id}">
-        <div class="history-item__title">\${esc(p.title || 'Untitled')}</div>
-        <div class="history-item__meta">\${esc(p.client_company)} · \${esc(p.document_number)}</div>
+    list.innerHTML = items.map(p => `
+      <div class="history-item" data-id="${p.id}">
+        <div class="history-item__title">${esc(p.project_title || 'Untitled')}</div>
+        <div class="history-item__meta">${esc(p.client_name || '')} · ${esc(p.doc_number || '')}</div>
       </div>
-    \`).join('');
+    `).join('');
     
     list.querySelectorAll('.history-item').forEach(el => {
       el.onclick = () => {
@@ -519,7 +515,7 @@ function downloadPDF() {
   const docNo = document.querySelector('.js-doc-no')?.innerText?.trim() || 'PD-PROPOSAL';
   const opt = {
     margin: [15, 15],
-    filename: \`\${docNo}.pdf\`,
+    filename: `${docNo}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true, letterRendering: true },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -528,7 +524,7 @@ function downloadPDF() {
   setStatus('working', '<span class="spinner"></span>Generating PDF file...');
   html2pdf().set(opt).from(element).save()
     .then(() => setStatus('ok', 'PDF downloaded successfully.'))
-    .catch(err => setStatus('error', \`PDF generation failed: \${err.message}\`));
+    .catch(err => setStatus('error', `PDF generation failed: ${err.message}`));
 }
 
 /* ---------- Date helpers ---------- */
@@ -539,7 +535,7 @@ function freshDocNo() {
   const now = new Date();
   const mm = String(now.getMonth() + 1).padStart(2, '0');
   const dd = String(now.getDate()).padStart(2, '0');
-  return \`PD-\${now.getFullYear()}-\${mm}\${dd}\`;
+  return `PD-${now.getFullYear()}-${mm}${dd}`;
 }
 function autofillMeta() {
   $('f_docno').value = freshDocNo();
