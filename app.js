@@ -48,6 +48,11 @@ Rules:
 - Scope of Work should be organized into phases, each with concrete deliverables.
 - Timeline, Project Cost, and Milestones should be tabular and internally consistent (milestone amounts
   should reconcile to the total cost — whether confirmed or estimated).
+- MILESTONES AND PAYMENT TERMS: unless the user's payment details specify a different schedule, use a
+  3-milestone split of 50% (upon confirmation/signing), 30% (mid-project milestone), and 20% (final
+  delivery/acceptance). For each milestone, compute the exact peso (or stated currency) amount that
+  percentage represents of the total cost (confirmed or estimated) and show it next to the percentage —
+  the client should never have to calculate it themselves. The three amounts must sum to the total.
 - Terms and Services must include, at minimum: confirmation & payment, taxes & expenses, scope control /
   change requests, IP & internal-use license, warranty/support boundary, and validity of the quotation.
 - Write in PocketDevs' house voice.
@@ -107,8 +112,8 @@ const PROPOSAL_SCHEMA = obj({
   }),
   milestonesPayment: arr(obj({
     milestone: str('Milestone name'),
-    percentage: str('Percent of total, e.g. "50%"'),
-    amount: str('Amount as text, derived from the (confirmed or estimated) total. Mark "(estimate)" if the total is an estimate.'),
+    percentage: str('Percent of total, e.g. "50%". Default to a 50% / 30% / 20% split across 3 milestones unless the payment details say otherwise.'),
+    amount: str('The peso amount this percentage represents of the total (confirmed or estimated), computed for the client. Mark "(estimate)" if the total is an estimate.'),
     trigger: str('What triggers this payment'),
   }), 'Milestones and payment schedule'),
   paymentOptions: arr(str('A payment method / option'), 'Accepted payment options'),
@@ -342,6 +347,24 @@ function list(items, mod) {
   return `<ul class="p-list${mod ? ' ' + mod : ''}">${items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`;
 }
 
+/* PocketDevs' default bank/e-wallet accounts, shown in Payment Options unless
+   the user provides their own payment details. */
+const PAYMENT_ACCOUNTS = [
+  { badge: 'BPI', badgeClass: 'p-paymethod__badge--bpi', bank: 'Bank of the Philippine Islands (BPI)', name: 'Bryl Kezter Lim', account: '9939078077' },
+  { badge: 'GCash', badgeClass: 'p-paymethod__badge--gcash', bank: 'GCash', name: 'Bryl Kezter Lim', account: '09055210329' },
+];
+function paymentAccounts() {
+  return `<div class="p-paymethods">${PAYMENT_ACCOUNTS.map((a) => `
+    <div class="p-paymethod">
+      <div class="p-paymethod__badge ${a.badgeClass}">${esc(a.badge)}</div>
+      <div class="p-paymethod__info">
+        <div class="p-paymethod__bank">${esc(a.bank)}</div>
+        <div class="p-paymethod__name">${esc(a.name)}</div>
+        <div class="p-paymethod__account">${esc(a.account)}</div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
 function render(d) {
   if (!d) return;
   const m = d.meta || {}, c = d.client || {}, pb = d.preparedBy || {};
@@ -400,7 +423,11 @@ function render(d) {
     sec.push(`<section class="p-section">${sectionHead(7, 'Milestones and Payment Terms')}
     <table class="p-table"><thead><tr><th>Milestone</th><th class="num">%</th><th class="num">Amount</th><th>Trigger</th></tr></thead><tbody>${mp}</tbody></table></section>`);
   }
-  sec.push(`<section class="p-section">${sectionHead(8, 'Payment Options')}${list(d.paymentOptions)}</section>`);
+  if (d.meta.paymentDetails) {
+    sec.push(`<section class="p-section">${sectionHead(8, 'Payment Options')}<div class="p-lede"><p>${esc(d.meta.paymentDetails)}</p></div></section>`);
+  } else {
+    sec.push(`<section class="p-section">${sectionHead(8, 'Payment Options')}${paymentAccounts()}${list(d.paymentOptions)}</section>`);
+  }
   const pls = d.postLaunchSupport || {};
   sec.push(`<section class="p-section">${sectionHead(9, 'Post Launch Support')}${paras(pls.summary)}${list(pls.inclusions, 'p-list--check')}</section>`);
   const terms = (d.termsAndServices || []).map((t) => `<p class="p-term"><span class="p-term__h">${esc(t.heading)}:</span> <span class="p-term__b">${esc(t.body)}</span></p>`).join('');

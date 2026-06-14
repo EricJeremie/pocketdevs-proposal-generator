@@ -270,6 +270,18 @@ button, input, textarea, select { font-family: inherit; }
 .p-scope__phase { font-weight: 700; color: #0f172a; margin-bottom: 0.35rem; }
 .p-table__total td { border-top: 2px solid #0f172a; font-weight: 800; color: #0f172a; }
 .p-note { margin-top: 0.5rem; font-size: 0.72rem; color: #64748b; font-style: italic; }
+.p-paymethods { display: flex; flex-direction: column; gap: 0.6rem; margin: 0.4rem 0 0.75rem; }
+.p-paymethod { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.8rem; border: 1px solid #e2e8f0; border-radius: 8px; }
+.p-paymethod__badge {
+  flex-shrink: 0; width: 44px; height: 44px; border-radius: 8px; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.7rem; letter-spacing: 0.02em; text-align: center;
+}
+.p-paymethod__badge--bpi { background: #c8102e; }
+.p-paymethod__badge--gcash { background: #0072ce; }
+.p-paymethod__bank { font-weight: 700; color: #0f172a; font-size: 0.82rem; }
+.p-paymethod__name { font-size: 0.78rem; color: #334155; }
+.p-paymethod__account { font-size: 0.78rem; color: #64748b; font-family: 'Courier New', monospace; }
 .p-term { margin: 0 0 0.65rem; color: #334155; }
 .p-term__h { font-weight: 700; color: #0f172a; }
 .p-sign { margin-top: 2.25rem; padding-top: 1.25rem; border-top: 1px solid #e2e8f0; }
