@@ -35,14 +35,19 @@ Milestones and Payment Terms, Payment Options, Post Launch Support, and Terms an
 
 Rules:
 - Ground every claim in the source document. Be specific to THIS client and project — never generic.
-- For hard facts (client name, project title, total cost, currency, timeline, dates, document number),
-  use ONLY the confirmed details provided by the user. If a needed value is missing, output the literal
-  string "[TBD]" — never invent precise figures, dates, or names.
+- For hard facts (client name, project title, currency, timeline, dates, document number), use ONLY the
+  confirmed details provided by the user. If a needed value is missing, output the literal string "[TBD]"
+  — never invent precise figures, dates, or names.
+- TOTAL COST / BUDGET is the one exception: if no total cost or budget figure was provided, do NOT output
+  "[TBD]". Instead, estimate a reasonable ballpark budget range based on the scope, complexity, deliverables,
+  and timeline you've worked out for this project (use your judgement of typical Philippine software/dev
+  market rates). Express it as a range (e.g. "Php 180,000 – 250,000 (estimate)") and clearly mark it as an
+  estimate so the client knows it's not a fixed quote.
 - Currency defaults to Philippine Peso (write amounts like "Php 250,000"). Keep totals exclusive of VAT
   unless told otherwise, and say so.
 - Scope of Work should be organized into phases, each with concrete deliverables.
 - Timeline, Project Cost, and Milestones should be tabular and internally consistent (milestone amounts
-  should reconcile to the total cost when a total is provided).
+  should reconcile to the total cost — whether confirmed or estimated).
 - Terms and Services must include, at minimum: confirmation & payment, taxes & expenses, scope control /
   change requests, IP & internal-use license, warranty/support boundary, and validity of the quotation.
 - Write in PocketDevs' house voice.
@@ -95,15 +100,15 @@ const PROPOSAL_SCHEMA = obj({
     lineItems: arr(obj({
       item: str('Line item'),
       basis: str('Commercial basis / notes'),
-      amount: str('Amount as text, e.g. "Php 120,000" or "[TBD]"'),
+      amount: str('Amount as text, e.g. "Php 120,000", or an estimated figure marked "(estimate)" if no budget was confirmed'),
     }), 'Cost line items'),
-    notes: str('Notes, e.g. exclusive of VAT and reimbursables'),
-    total: str('Total amount as text, or "[TBD]"'),
+    notes: str('Notes, e.g. exclusive of VAT and reimbursables. If the total is an estimate, note that it is a ballpark figure subject to confirmation.'),
+    total: str('Total amount as text. If no budget was confirmed, give a ballpark range marked "(estimate)" instead of "[TBD]"'),
   }),
   milestonesPayment: arr(obj({
     milestone: str('Milestone name'),
     percentage: str('Percent of total, e.g. "50%"'),
-    amount: str('Amount as text, or "[TBD]"'),
+    amount: str('Amount as text, derived from the (confirmed or estimated) total. Mark "(estimate)" if the total is an estimate.'),
     trigger: str('What triggers this payment'),
   }), 'Milestones and payment schedule'),
   paymentOptions: arr(str('A payment method / option'), 'Accepted payment options'),
@@ -242,7 +247,8 @@ async function generate() {
 
   const userText =
     'Draft a PocketDevs proposal' + (pdfBase64 ? ' based on the attached source document and these confirmed details.' : ' from these confirmed details.') +
-    '\\nUse ONLY these confirmed values for hard facts; output "[TBD]" for anything missing.\\n\\n' +
+    '\\nUse ONLY these confirmed values for hard facts; output "[TBD]" for anything missing, EXCEPT totalCost/budget — ' +
+    'if those are not provided, estimate a ballpark budget range based on the scope and complexity instead.\\n\\n' +
     'CONFIRMED DETAILS (JSON):\\n' + JSON.stringify({
       clientCompany: intake.company || null,
       projectTitle: intake.title || null,
