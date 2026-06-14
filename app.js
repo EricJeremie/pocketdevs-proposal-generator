@@ -418,17 +418,32 @@ function render(d) {
 
 /* ---------- Auth Modal ---------- */
 function showAuthModal() {
+  setAuthMode('login');
   $('authModal').classList.add('modal--visible');
 }
 function hideAuthModal() {
   $('authModal').classList.remove('modal--visible');
 }
 
+let authMode = 'login';
+function setAuthMode(mode) {
+  authMode = mode;
+  const isSignUp = mode === 'signup';
+  $('authTitle').textContent = isSignUp ? 'Create your PocketDevs account' : 'Sign in to PocketDevs';
+  $('authSubmit').textContent = isSignUp ? 'Sign Up' : 'Login';
+  $('authTabLogin').classList.toggle('btn--primary', !isSignUp);
+  $('authTabLogin').classList.toggle('btn--ghost', isSignUp);
+  $('authTabLogin').setAttribute('aria-pressed', String(!isSignUp));
+  $('authTabSignup').classList.toggle('btn--primary', isSignUp);
+  $('authTabSignup').classList.toggle('btn--ghost', !isSignUp);
+  $('authTabSignup').setAttribute('aria-pressed', String(isSignUp));
+}
+
 async function handleAuth(e) {
   e.preventDefault();
   const email = $('authEmail').value;
   const password = $('authPassword').value;
-  const isSignUp = e.submitter.dataset.mode === 'signup';
+  const isSignUp = authMode === 'signup';
 
   try {
     const { error } = isSignUp
@@ -555,6 +570,8 @@ function init() {
     $('downloadBtn').addEventListener('click', downloadPDF);
     $('authForm').addEventListener('submit', handleAuth);
     $('closeAuth').addEventListener('click', hideAuthModal);
+    $('authTabLogin').addEventListener('click', () => setAuthMode('login'));
+    $('authTabSignup').addEventListener('click', () => setAuthMode('signup'));
   } catch (err) {
     console.error('App initialization failed:', err);
   }

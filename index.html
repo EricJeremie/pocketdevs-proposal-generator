@@ -32,7 +32,11 @@
       <div id="authModal" class="modal">
         <div class="modal__content card">
           <button id="closeAuth" class="modal__close">&times;</button>
-          <h2 class="card__title">Sign in to PocketDevs</h2>
+          <h2 class="card__title" id="authTitle">Sign in to PocketDevs</h2>
+          <div class="grid2" role="tablist">
+            <button type="button" id="authTabLogin" data-mode="login" class="btn btn--primary" aria-pressed="true">Login</button>
+            <button type="button" id="authTabSignup" data-mode="signup" class="btn btn--ghost" aria-pressed="false">Sign Up</button>
+          </div>
           <form id="authForm">
             <div class="field">
               <label class="label">Email</label>
@@ -40,12 +44,9 @@
             </div>
             <div class="field">
               <label class="label">Password</label>
-              <input id="authPassword" type="password" class="input" required />
+              <input id="authPassword" type="password" class="input" required minlength="6" />
             </div>
-            <div class="grid2">
-              <button type="submit" data-mode="login" class="btn btn--primary">Login</button>
-              <button type="submit" data-mode="signup" class="btn btn--ghost">Sign Up</button>
-            </div>
+            <button type="submit" id="authSubmit" class="btn btn--primary btn--block">Login</button>
           </form>
         </div>
       </div>
