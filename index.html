@@ -20,8 +20,16 @@
       <span class="appbar__title">Proposal Generator</span>
     </div>
     <div class="appbar__actions">
+      <span id="authGreeting" class="appbar__greeting" hidden></span>
       <button id="authNavBtn" class="btn btn--ghost">Login</button>
       <button id="settingsBtn" class="btn btn--ghost" type="button">Settings</button>
+      <div id="userMenu" class="user-menu" hidden>
+        <button id="userMenuBtn" class="user-menu__avatar" type="button" aria-haspopup="true" aria-expanded="false"></button>
+        <div id="userMenuDropdown" class="user-menu__dropdown" hidden>
+          <button id="userMenuSettings" class="user-menu__item" type="button">Settings</button>
+          <button id="userMenuLogout" class="user-menu__item" type="button">Log out</button>
+        </div>
+      </div>
       <button id="downloadBtn" class="btn btn--primary" type="button" disabled>Download PDF</button>
     </div>
   </header>

@@ -101,6 +101,27 @@ button, input, textarea, select { font-family: inherit; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); display: inline-block; }
 .dot--ok { background: #10b981; }
 
+/* Greeting + user menu */
+.appbar__greeting { font-size: 0.8125rem; font-weight: 500; color: var(--text-muted); margin-right: 0.25rem; white-space: nowrap; }
+.user-menu { position: relative; }
+.user-menu__avatar {
+  width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer;
+  background: var(--rausch); color: #fff; font-weight: 700; font-size: 0.8125rem;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
+}
+.user-menu__dropdown {
+  position: absolute; top: calc(100% + 0.5rem); right: 0; min-width: 150px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: var(--shadow); padding: 0.25rem; display: flex; flex-direction: column;
+  z-index: 200;
+}
+.user-menu__item {
+  display: block; width: 100%; text-align: left; padding: 0.5rem 0.75rem;
+  border-radius: 6px; border: none; background: none; cursor: pointer;
+  font-size: 0.8125rem; color: var(--text);
+}
+.user-menu__item:hover { background: var(--bg-subtle); }
+
 /* Logo settings row */
 .logo-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
 .logo-preview { height: 28px; width: auto; max-width: 120px; }

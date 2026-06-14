@@ -466,21 +466,41 @@ async function handleAuth(e) {
   }
 }
 
+function greetingPhrase() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
 async function updateAuthState() {
   try {
     const session = await getSession();
-    const btn = $('authNavBtn');
+    const navBtn = $('authNavBtn');
+    const userMenu = $('userMenu');
+    const greeting = $('authGreeting');
     if (session) {
-      const fullName = session.user.user_metadata && session.user.user_metadata.full_name;
-      btn.textContent = (fullName && fullName.trim()) || session.user.email.split('@')[0];
-      btn.onclick = async () => {
-        await signOut();
-        updateAuthState();
-      };
+      const fullName = (session.user.user_metadata && session.user.user_metadata.full_name) || '';
+      const displayName = fullName.trim() || session.user.email.split('@')[0];
+      const firstName = displayName.trim().split(/\s+/)[0];
+
+      navBtn.hidden = true;
+      $('settingsBtn').hidden = true;
+      userMenu.hidden = false;
+      $('userMenuBtn').textContent = firstName.charAt(0).toUpperCase();
+      $('userMenuBtn').title = displayName;
+      greeting.hidden = false;
+      greeting.textContent = `${greetingPhrase()}, ${firstName}`;
+
       refreshHistory();
     } else {
-      btn.textContent = 'Login';
-      btn.onclick = showAuthModal;
+      navBtn.hidden = false;
+      navBtn.textContent = 'Login';
+      navBtn.onclick = showAuthModal;
+      $('settingsBtn').hidden = false;
+      userMenu.hidden = true;
+      $('userMenuDropdown').hidden = true;
+      greeting.hidden = true;
       $('historyList').innerHTML = '<p class="card__hint">Login to see your history.</p>';
     }
   } catch (err) {
@@ -577,6 +597,27 @@ function init() {
     $('closeAuth').addEventListener('click', hideAuthModal);
     $('authTabLogin').addEventListener('click', () => setAuthMode('login'));
     $('authTabSignup').addEventListener('click', () => setAuthMode('signup'));
+
+    $('userMenuBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const dd = $('userMenuDropdown');
+      const open = dd.hidden;
+      dd.hidden = !open;
+      $('userMenuBtn').setAttribute('aria-expanded', String(open));
+    });
+    $('userMenuSettings').addEventListener('click', () => {
+      $('settingsPanel').hidden = !$('settingsPanel').hidden;
+      $('userMenuDropdown').hidden = true;
+    });
+    $('userMenuLogout').addEventListener('click', async () => {
+      $('userMenuDropdown').hidden = true;
+      await signOut();
+      updateAuthState();
+    });
+    document.addEventListener('click', (e) => {
+      const menu = $('userMenu');
+      if (!menu.hidden && !menu.contains(e.target)) $('userMenuDropdown').hidden = true;
+    });
   } catch (err) {
     console.error('App initialization failed:', err);
   }
