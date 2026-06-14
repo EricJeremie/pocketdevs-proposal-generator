@@ -91,34 +91,57 @@
       <!-- Step 2 — Details -->
       <section class="card">
         <div class="step"><span class="step__n">2</span><h2 class="card__title">Proposal details</h2></div>
+        <p class="card__hint">Anchors the AI to real facts. Leave blank to let Claude propose — blanks render as <code>[TBD]</code>, never invented numbers.</p>
+
         <div class="grid2">
-          <div class="field"><label class="label">Client</label><input id="f_company" class="input" /></div>
-          <div class="field"><label class="label">Project</label><input id="f_title" class="input" /></div>
-          <div class="field"><label class="label">Contact</label><input id="f_contact" class="input" /></div>
-          <div class="field"><label class="label">Role</label><input id="f_contactTitle" class="input" /></div>
+          <div class="field"><label class="label">Client / company</label><input id="f_company" class="input" placeholder="Acme Inc." /></div>
+          <div class="field"><label class="label">Project title</label><input id="f_title" class="input" placeholder="Website Redesign" /></div>
+          <div class="field"><label class="label">Contact name</label><input id="f_contact" class="input" placeholder="Jomar Mansilungan" /></div>
+          <div class="field"><label class="label">Contact title</label><input id="f_contactTitle" class="input" placeholder="Program Manager" /></div>
           <div class="field"><label class="label">Currency</label>
             <select id="f_currency" class="input">
-              <option value="PHP" data-symbol="₱">PHP</option>
-              <option value="USD" data-symbol="$">USD</option>
+              <option value="PHP" data-symbol="₱">₱ PHP — Philippine Peso</option>
+              <option value="USD" data-symbol="$">$ USD — US Dollar</option>
+              <option value="EUR" data-symbol="€">€ EUR — Euro</option>
+              <option value="GBP" data-symbol="£">£ GBP — British Pound</option>
+              <option value="AUD" data-symbol="A$">A$ AUD — Australian Dollar</option>
+              <option value="SGD" data-symbol="S$">S$ SGD — Singapore Dollar</option>
+              <option value="CAD" data-symbol="C$">C$ CAD — Canadian Dollar</option>
+              <option value="AED" data-symbol="AED">AED — UAE Dirham</option>
+              <option value="JPY" data-symbol="¥">¥ JPY — Japanese Yen</option>
             </select>
           </div>
-          <div class="field"><label class="label">Locale</label>
+          <div class="field"><label class="label">Locale (dates)</label>
             <select id="f_locale" class="input">
-              <option value="en-PH">Philippines</option>
-              <option value="en-US">US</option>
+              <option value="en-PH">English (Philippines)</option>
+              <option value="en-US">English (US)</option>
+              <option value="en-GB">English (UK)</option>
+              <option value="en-AU">English (Australia)</option>
+              <option value="en-SG">English (Singapore)</option>
+              <option value="en-CA">English (Canada)</option>
             </select>
           </div>
-          <div class="field"><label class="label">Cost</label><input id="f_cost" class="input" /></div>
-          <div class="field"><label class="label">Timeline</label><input id="f_timeline" class="input" /></div>
-          <div class="field"><label class="label">Valid until</label><input id="f_valid" class="input" /></div>
-          <div class="field"><label class="label">Doc no.</label><input id="f_docno" class="input" /></div>
-          <div class="field"><label class="label">Date</label><input id="f_date" class="input" /></div>
+          <div class="field"><label class="label">Total cost</label><input id="f_cost" class="input" placeholder="e.g. ₱ 250,000" /></div>
+          <div class="field"><label class="label">Timeline</label><input id="f_timeline" class="input" placeholder="e.g. 8 weeks" /></div>
+          <div class="field"><label class="label">Valid until</label><input id="f_valid" class="input" placeholder="e.g. July 19, 2026" /></div>
+          <div class="field"><label class="label">Document no.</label><input id="f_docno" class="input" /></div>
+          <div class="field"><label class="label">Prepared date</label><input id="f_date" class="input" /></div>
+          <div class="field field--full"><label class="label">Prepared by (signatory)</label><input id="f_signatory" class="input" value="Eric Jeremie Rotaquio" /></div>
+          <div class="field field--full"><label class="label">Signatory title</label><input id="f_signatoryTitle" class="input" value="Chief Executive Officer, PocketDevs" /></div>
         </div>
-        <div class="field"><label class="label">Notes</label><textarea id="f_notes" class="input textarea" rows="2"></textarea></div>
-        <input id="f_signatory" type="hidden" value="Eric Jeremie Rotaquio" />
-        <input id="f_signatoryTitle" type="hidden" value="Chief Executive Officer, PocketDevs" />
-        <input id="f_budget" type="hidden" value="" />
-        <input id="f_paymentDetails" type="hidden" value="" />
+
+        <div class="field field--full">
+          <label class="label">Budget <span class="label__opt">(optional, manual override)</span></label>
+          <input id="f_budget" class="input" placeholder="e.g. Php 250,000 fixed fee" />
+        </div>
+        <div class="field field--full">
+          <label class="label">Payment details <span class="label__opt">(optional, manual override)</span></label>
+          <textarea id="f_paymentDetails" class="input textarea" rows="2" placeholder="e.g. 50% upfront, 50% on completion via Bank Transfer."></textarea>
+        </div>
+        <div class="field field--full">
+          <label class="label">Extra instructions <span class="label__opt">(optional)</span></label>
+          <textarea id="f_notes" class="input textarea" rows="2" placeholder="e.g. Emphasize SEO; bill in 3 milestones; exclude hosting."></textarea>
+        </div>
       </section>
 
       <!-- Step 3 — Generate -->
