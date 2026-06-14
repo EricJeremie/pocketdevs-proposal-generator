@@ -5,8 +5,8 @@
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const SUPABASE_URL = 'https://qgfbpaetjwvrjnyedokl.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_DfbCj9SU40bAUQjcADoY0w_vznMDHyp';
+const SUPABASE_URL = 'https://xiykfvyjavkkmfqujcql.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_CoqmS7OUcHBQ55Ho22xgyg_RYYtUoLk';
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* ---------- Auth State ---------- */
