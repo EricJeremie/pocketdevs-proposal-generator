@@ -437,17 +437,20 @@ function setAuthMode(mode) {
   $('authTabSignup').classList.toggle('btn--primary', isSignUp);
   $('authTabSignup').classList.toggle('btn--ghost', !isSignUp);
   $('authTabSignup').setAttribute('aria-pressed', String(isSignUp));
+  $('authNameField').hidden = !isSignUp;
+  $('authName').required = isSignUp;
 }
 
 async function handleAuth(e) {
   e.preventDefault();
+  const name = $('authName').value.trim();
   const email = $('authEmail').value;
   const password = $('authPassword').value;
   const isSignUp = authMode === 'signup';
 
   try {
     const { data, error } = isSignUp
-      ? await signUp(email, password)
+      ? await signUp(email, password, name)
       : await signIn(email, password);
 
     if (error) {
@@ -468,7 +471,8 @@ async function updateAuthState() {
     const session = await getSession();
     const btn = $('authNavBtn');
     if (session) {
-      btn.textContent = session.user.email.split('@')[0];
+      const fullName = session.user.user_metadata && session.user.user_metadata.full_name;
+      btn.textContent = (fullName && fullName.trim()) || session.user.email.split('@')[0];
       btn.onclick = async () => {
         await signOut();
         updateAuthState();

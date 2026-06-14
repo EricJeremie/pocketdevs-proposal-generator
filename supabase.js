@@ -58,10 +58,10 @@ export async function signIn(email, password) {
   catch (err) { return { error: { message: err.message || 'Sign-in failed.' } }; }
 }
 
-export async function signUp(email, password) {
+export async function signUp(email, password, fullName) {
   const sb = await getClient();
   if (!sb) return { error: { message: 'Accounts are offline right now — you can still generate proposals.' } };
-  try { return await sb.auth.signUp({ email, password }); }
+  try { return await sb.auth.signUp({ email, password, options: { data: { full_name: fullName || '' } } }); }
   catch (err) { return { error: { message: err.message || 'Sign-up failed.' } }; }
 }
 

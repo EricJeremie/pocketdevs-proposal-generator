@@ -38,6 +38,10 @@
             <button type="button" id="authTabSignup" data-mode="signup" class="btn btn--ghost" aria-pressed="false">Sign Up</button>
           </div>
           <form id="authForm">
+            <div class="field" id="authNameField" hidden>
+              <label class="label">Name</label>
+              <input id="authName" type="text" class="input" autocomplete="name" />
+            </div>
             <div class="field">
               <label class="label">Email</label>
               <input id="authEmail" type="email" class="input" required />
