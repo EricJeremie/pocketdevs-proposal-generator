@@ -354,6 +354,22 @@ function list(items, mod) {
   return `<ul class="p-list${mod ? ' ' + mod : ''}">${items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`;
 }
 
+/* ---------- Amount helpers (for auto-computing milestone splits) ---------- */
+function parseAmount(text) {
+  if (!text) return null;
+  const m = String(text).match(/[\d,]+(\.\d+)?/);
+  if (!m) return null;
+  const n = parseFloat(m[0].replace(/,/g, ''));
+  return isNaN(n) ? null : n;
+}
+function currencyPrefix(text) {
+  const m = String(text || '').match(/^[^\d]*/);
+  return m ? m[0].trim() + ' ' : '';
+}
+function formatAmount(n, prefix) {
+  return `${prefix}${Math.round(n).toLocaleString('en-US')}`;
+}
+
 /* PocketDevs' default bank/e-wallet accounts, shown in Payment Options unless
    the user provides their own payment details. */
 const PAYMENT_ACCOUNTS = [
@@ -423,7 +439,21 @@ function render(d) {
   <table class="p-table"><thead><tr><th>Line item</th><th>Basis</th><th class="num">Amount</th></tr></thead>
   <tbody>${ci}${cost.total ? `<tr class="p-table__total"><td>Total</td><td></td><td class="num">${esc(cost.total)}</td></tr>` : ''}</tbody></table>
   ${cost.notes ? `<div class="p-note">${esc(cost.notes)}</div>` : ''}</section>`);
-  const mp = (d.milestonesPayment || []).map((r) => `<tr><td>${esc(r.milestone)}</td><td class="num">${esc(r.percentage)}</td><td class="num">${esc(r.amount)}</td><td>${esc(r.trigger)}</td></tr>`).join('');
+  let milestones = (d.milestonesPayment || []).filter((r) => r && r.amount && r.amount !== '[TBD]' && r.percentage && r.percentage !== '[TBD]');
+  if (!milestones.length) {
+    const totalSource = (cost.total && cost.total !== '[TBD]') ? cost.total : d.meta.budget;
+    const totalAmount = parseAmount(totalSource);
+    if (totalAmount != null) {
+      const prefix = currencyPrefix(totalSource);
+      const suffix = /estimate/i.test(totalSource) ? ' (estimate)' : '';
+      milestones = [
+        { milestone: 'Confirmation / Project Kickoff', percentage: '50%', amount: formatAmount(totalAmount * 0.5, prefix) + suffix, trigger: 'Upon signing and confirmation' },
+        { milestone: 'Mid-Project Delivery', percentage: '30%', amount: formatAmount(totalAmount * 0.3, prefix) + suffix, trigger: 'Upon completion of the core development milestone' },
+        { milestone: 'Final Delivery', percentage: '20%', amount: formatAmount(totalAmount * 0.2, prefix) + suffix, trigger: 'Upon final delivery and client acceptance' },
+      ];
+    }
+  }
+  const mp = milestones.map((r) => `<tr><td>${esc(r.milestone)}</td><td class="num">${esc(r.percentage)}</td><td class="num">${esc(r.amount)}</td><td>${esc(r.trigger)}</td></tr>`).join('');
   if (d.meta.paymentDetails) {
     sec.push(`<section class="p-section">${sectionHead(7, 'Milestones and Payment Terms')}<div class="p-lede"><p>${esc(d.meta.paymentDetails)}</p></div></section>`);
   } else {
