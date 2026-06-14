@@ -294,7 +294,9 @@ async function generate() {
 
     if (!res.ok) {
       const msg = data && data.error ? data.error.message : `HTTP ${res.status}`;
-      if (res.status === 401) { showAuthModal(); }
+      // Only prompt to sign in when our own edge function rejected the session —
+      // not when Anthropic's API itself returns a 401 (e.g. invalid server-side API key).
+      if (res.status === 401 && /sign(ed)? in|session/i.test(msg)) { showAuthModal(); }
       setStatus('error', `Generation failed: ${esc(msg)}`);
       return;
     }
