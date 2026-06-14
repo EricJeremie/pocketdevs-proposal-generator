@@ -5,13 +5,13 @@
    ============================================================ */
 'use strict';
 
-import { getSession, signIn, signUp, signOut, saveProposal, fetchUserProposals } from './supabase.js';
+import { getSession, signIn, signUp, signOut, saveProposal, fetchUserProposals, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
 
 /* ---------- Constants ---------- */
 const MODEL = 'claude-opus-4-8';
-// Generation goes through our own backend, which holds the Anthropic key
-// server-side (see api/generate.js). The browser never sees the key.
-const API_URL = '/api/generate';
+// Generation goes through a Supabase Edge Function, which holds the
+// Anthropic key as a server-side secret. The browser never sees the key.
+const API_URL = `${SUPABASE_URL}/functions/v1/generate-proposal`;
 const LS_LOGO = 'pdv_logo';
 const DEFAULT_LOGO = 'assets/logo.svg';
 
@@ -220,7 +220,7 @@ function collectIntake() {
 
 /* ---------- Generate ---------- */
 async function generate() {
-  // Generation runs through our backend (/api/generate), which holds the
+  // Generation runs through a Supabase Edge Function, which holds the
   // Anthropic key server-side and requires a signed-in user. We need a valid
   // Supabase session token to authorize the call.
   const session = await getSession();
@@ -285,6 +285,7 @@ async function generate() {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
         'authorization': `Bearer ${session.access_token}`,
       },
       body: JSON.stringify(body),

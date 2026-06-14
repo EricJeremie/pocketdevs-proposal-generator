@@ -6,8 +6,9 @@
    ============================================================ */
 'use strict';
 
-const SUPABASE_URL = 'https://xiykfvyjavkkmfqujcql.supabase.co';
+export const SUPABASE_URL = 'https://xiykfvyjavkkmfqujcql.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_CoqmS7OUcHBQ55Ho22xgyg_RYYtUoLk';
+export const SUPABASE_ANON_KEY = SUPABASE_KEY;
 
 let _client = null;
 let _failed = false;
