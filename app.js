@@ -319,6 +319,13 @@ async function generate() {
     try { proposal = JSON.parse(block.text); }
     catch (e) { setStatus('error', 'Response was not valid JSON.'); return; }
 
+    // These are manual-override fields: only honor them if the user actually
+    // typed something, regardless of what the model echoed back.
+    if (proposal.meta) {
+      proposal.meta.budget = intake.budget || '';
+      proposal.meta.paymentDetails = intake.paymentDetails || '';
+    }
+
     render(proposal);
     // Best-effort save to history (we're signed in; never blocks the result).
     try {
