@@ -292,7 +292,14 @@ button, input, textarea, select { font-family: inherit; }
 .p-sign__title { font-size: 0.78rem; color: #64748b; }
 .p-docfooter { margin-top: 2.25rem; padding-top: 0.9rem; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; font-size: 0.68rem; color: #94a3b8; }
 .p-docfooter b { color: var(--rausch); }
-.empty { text-align: center; color: #64748b; padding: 3rem 1rem; }
+.empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; color: #64748b; padding: 4rem 1.5rem; margin: 2rem;
+  min-height: 320px; cursor: pointer;
+  border: 2px dashed var(--border); border-radius: var(--radius);
+  transition: all 0.15s ease;
+}
+.empty:hover, .empty.is-drag { border-color: var(--rausch); background: rgba(242, 56, 74, 0.05); }
 .empty__logo { height: 30px; margin-bottom: 1.25rem; }
 .empty h2 { font-size: 1.1rem; color: #0f172a; margin-bottom: 0.5rem; }
 .empty p { font-size: 0.85rem; max-width: 44ch; margin: 0 auto; }

@@ -778,6 +778,14 @@ function initDropzone() {
   ['dragleave', 'drop'].forEach((ev) => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove('is-drag'); }));
   dz.addEventListener('drop', (e) => { if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
   dz.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('fileInput').click(); } });
+
+  // The empty-state placeholder also acts as a dropzone.
+  const empty = $('emptyState');
+  if (empty) {
+    ['dragenter', 'dragover'].forEach((ev) => empty.addEventListener(ev, (e) => { e.preventDefault(); empty.classList.add('is-drag'); }));
+    ['dragleave', 'drop'].forEach((ev) => empty.addEventListener(ev, (e) => { e.preventDefault(); empty.classList.remove('is-drag'); }));
+    empty.addEventListener('drop', (e) => { if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+  }
 }
 
 function init() {
