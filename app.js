@@ -64,6 +64,8 @@ const PROPOSAL_SCHEMA = obj({
     validUntil: str('Date the quotation is valid until, or [TBD]'),
     title: str('Proposal title / project name'),
     currency: str('Currency code or symbol, e.g. PHP'),
+    budget: str('Optional manual budget display text'),
+    paymentDetails: str('Optional manual payment details text'),
   }),
   client: obj({
     company: str('Client company name'),
@@ -211,6 +213,8 @@ function collectIntake() {
     signatory: $('f_signatory').value.trim() || 'Eric Jeremie Rotaquio',
     signatoryTitle: $('f_signatoryTitle').value.trim() || 'Chief Executive Officer, PocketDevs',
     notes: $('f_notes').value.trim(),
+    budget: $('f_budget').value.trim(),
+    paymentDetails: $('f_paymentDetails').value.trim(),
   };
 }
 
@@ -251,6 +255,8 @@ async function generate() {
       preparedDate: intake.preparedDate || null,
       signatory: intake.signatory,
       signatoryTitle: intake.signatoryTitle,
+      budget: intake.budget || null,
+      paymentDetails: intake.paymentDetails || null,
     }, null, 2) +
     (intake.notes ? '\n\nEXTRA INSTRUCTIONS:\n' + intake.notes : '') +
     `\n\nFORMATTING: Write every monetary amount with the "${intake.currencySymbol || intake.currency}" symbol (currency ${intake.currency}), e.g. "${intake.currencySymbol || ''}120,000". Use ${intake.locale} conventions for dates and number grouping.` +
@@ -375,14 +381,22 @@ function render(d) {
 
   const cost = d.cost || {};
   const ci = (cost.lineItems || []).map((r) => `<tr><td>${esc(r.item)}</td><td>${esc(r.basis)}</td><td class="num">${esc(r.amount)}</td></tr>`).join('');
-  sec.push(`<section class="p-section">${sectionHead(6, 'Project Cost')}
+  if (d.meta.budget) {
+    sec.push(`<section class="p-section">${sectionHead(6, 'Project Cost')}<div class="p-lede"><p><strong>Proposed Budget:</strong> ${esc(d.meta.budget)}</p></div></section>`);
+  } else {
+    sec.push(`<section class="p-section">${sectionHead(6, 'Project Cost')}
     <table class="p-table"><thead><tr><th>Line item</th><th>Basis</th><th class="num">Amount</th></tr></thead>
     <tbody>${ci}${cost.total ? `<tr class="p-table__total"><td>Total</td><td></td><td class="num">${esc(cost.total)}</td></tr>` : ''}</tbody></table>
     ${cost.notes ? `<div class="p-note">${esc(cost.notes)}</div>` : ''}</section>`);
+  }
 
   const mp = (d.milestonesPayment || []).map((r) => `<tr><td>${esc(r.milestone)}</td><td class="num">${esc(r.percentage)}</td><td class="num">${esc(r.amount)}</td><td>${esc(r.trigger)}</td></tr>`).join('');
-  sec.push(`<section class="p-section">${sectionHead(7, 'Milestones and Payment Terms')}
+  if (d.meta.paymentDetails) {
+    sec.push(`<section class="p-section">${sectionHead(7, 'Milestones and Payment Terms')}<div class="p-lede"><p>${esc(d.meta.paymentDetails)}</p></div></section>`);
+  } else {
+    sec.push(`<section class="p-section">${sectionHead(7, 'Milestones and Payment Terms')}
     <table class="p-table"><thead><tr><th>Milestone</th><th class="num">%</th><th class="num">Amount</th><th>Trigger</th></tr></thead><tbody>${mp}</tbody></table></section>`);
+  }
 
   sec.push(`<section class="p-section">${sectionHead(8, 'Payment Options')}${list(d.paymentOptions)}</section>`);
 
