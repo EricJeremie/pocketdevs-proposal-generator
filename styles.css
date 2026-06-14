@@ -91,6 +91,7 @@ button, input, textarea, select { font-family: inherit; }
   font-weight: 600; cursor: pointer; transition: all 0.15s ease;
   border: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
 }
+.btn[hidden] { display: none; }
 .btn--primary { background: var(--rausch); color: white; }
 .btn--primary:hover { background: var(--rausch-hover); }
 .btn--ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
