@@ -168,9 +168,9 @@ function applyLogo() {
 }
 
 /* ---------- Locale / currency ---------- */
-function getLocale() { const el = $('f_locale'); return (el && el.value) || 'en-PH'; }
-function currencySymbol() {
-  const sel = $('f_currency');
+function getLocale(id = 'f_locale') { const el = $(id); return (el && el.value) || 'en-PH'; }
+function currencySymbol(id = 'f_currency') {
+  const sel = $(id);
   const opt = sel && sel.options[sel.selectedIndex];
   return (opt && opt.dataset.symbol) || '';
 }
@@ -225,6 +225,23 @@ function collectIntake() {
     notes: $('f_notes').value.trim(),
     budget: $('f_budget').value.trim(),
     paymentDetails: $('f_paymentDetails').value.trim(),
+  };
+}
+
+function collectInvoiceIntake() {
+  return {
+    client: $('f_inv_client').value.trim(),
+    contact: $('f_inv_contact').value.trim(),
+    clientTin: $('f_inv_clientTin').value.trim(),
+    company: $('f_inv_company').value.trim() || 'PocketDevs',
+    tin: $('f_inv_tin').value.trim(),
+    invoiceNumber: $('f_inv_no').value.trim(),
+    currency: $('f_inv_currency').value.trim() || 'PHP',
+    currencySymbol: currencySymbol('f_inv_currency'),
+    locale: getLocale('f_inv_locale'),
+    invoiceDate: $('f_inv_date').value.trim(),
+    dueDate: $('f_inv_due').value.trim(),
+    paymentDetails: $('f_inv_paymentDetails').value.trim(),
   };
 }
 
@@ -487,6 +504,165 @@ function render(d) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+/* ---------- Invoice line items ---------- */
+function addLineItemRow(values) {
+  const row = document.createElement('div');
+  row.className = 'line-item';
+  row.innerHTML = `
+    <input class="input line-item__desc" placeholder="Description" />
+    <div class="line-item__row2">
+      <input class="input line-item__qty" type="number" min="0" step="1" value="1" placeholder="Qty" />
+      <input class="input line-item__price" type="number" min="0" step="0.01" placeholder="Unit price" />
+      <div class="line-item__amount">0.00</div>
+      <button type="button" class="line-item__remove" aria-label="Remove item">&times;</button>
+    </div>
+  `;
+  const desc = row.querySelector('.line-item__desc');
+  const qty = row.querySelector('.line-item__qty');
+  const price = row.querySelector('.line-item__price');
+  if (values) {
+    desc.value = values.description || '';
+    qty.value = values.qty != null ? values.qty : 1;
+    price.value = values.unitPrice != null ? values.unitPrice : '';
+  }
+  const recalc = () => {
+    const amount = (Number(qty.value) || 0) * (Number(price.value) || 0);
+    row.querySelector('.line-item__amount').textContent = amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    updateInvoiceTotal();
+  };
+  qty.addEventListener('input', recalc);
+  price.addEventListener('input', recalc);
+  row.querySelector('.line-item__remove').addEventListener('click', () => {
+    row.remove();
+    updateInvoiceTotal();
+  });
+  $('invoiceItems').appendChild(row);
+  recalc();
+}
+
+function updateInvoiceTotal() {
+  let total = 0;
+  $('invoiceItems').querySelectorAll('.line-item').forEach((row) => {
+    const qty = Number(row.querySelector('.line-item__qty').value) || 0;
+    const price = Number(row.querySelector('.line-item__price').value) || 0;
+    total += qty * price;
+  });
+  $('invoiceItemsTotal').textContent = `${currencySymbol('f_inv_currency')}${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return total;
+}
+
+function collectLineItems() {
+  const items = [];
+  $('invoiceItems').querySelectorAll('.line-item').forEach((row) => {
+    const description = row.querySelector('.line-item__desc').value.trim();
+    const qty = Number(row.querySelector('.line-item__qty').value) || 0;
+    const unitPrice = Number(row.querySelector('.line-item__price').value) || 0;
+    if (!description && !qty && !unitPrice) return;
+    items.push({ description, qty, unitPrice, amount: qty * unitPrice });
+  });
+  return items;
+}
+
+/* ---------- Invoice render ---------- */
+function renderInvoice(d) {
+  if (!d) return;
+  const m = d.meta || {}, c = d.client || {}, pb = d.preparedBy || {};
+  const prefix = m.currencySymbol || '';
+
+  const cover = `
+    <header class="p-cover">
+      <div class="p-cover__top">
+        <img src="${esc(currentLogo())}" alt="Logo" class="p-cover__logo js-logo" />
+        <div class="p-eyebrow">
+          <div class="js-doc-no"><b>${esc(m.documentNumber || '[TBD]')}</b></div>
+          <div>Invoice date ${esc(m.invoiceDate || '[TBD]')}</div>
+          ${m.dueDate ? `<div>Due ${esc(m.dueDate)}</div>` : ''}
+        </div>
+      </div>
+      <span class="p-kicker">Invoice</span>
+      <h1 class="p-title">Invoice</h1>
+      <div class="p-parties">
+        <div class="p-party">
+          <div class="p-party__label">Bill to</div>
+          <div class="p-party__name">${esc(c.company || '[TBD]')}</div>
+          ${c.contactName ? `<div class="p-party__meta">${esc(c.contactName)}</div>` : ''}
+          <div class="p-party__meta">TIN: ${esc(c.tin || '[TBD]')}</div>
+        </div>
+        <div class="p-party">
+          <div class="p-party__label">From</div>
+          <div class="p-party__name">${esc(pb.company || 'PocketDevs')}</div>
+          <div class="p-party__meta">TIN: ${esc(pb.tin || '[TBD]')}</div>
+        </div>
+      </div>
+    </header>`;
+
+  const rows = (d.items || []).map((i) => `<tr>
+    <td>${esc(i.description)}</td>
+    <td class="num">${esc(i.qty)}</td>
+    <td class="num">${formatAmount(i.unitPrice, prefix)}</td>
+    <td class="num">${formatAmount(i.amount, prefix)}</td>
+  </tr>`).join('');
+  const total = (d.items || []).reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+  const itemsSection = `<section class="p-section">${sectionHead(1, 'Items')}
+    <table class="p-table"><thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead>
+    <tbody>${rows}<tr class="p-table__total"><td colspan="3">Total</td><td class="num">${formatAmount(total, prefix)}</td></tr></tbody></table></section>`;
+
+  const paymentSection = m.paymentDetails
+    ? `<section class="p-section">${sectionHead(2, 'Payment Details')}<div class="p-lede"><p>${esc(m.paymentDetails)}</p></div></section>`
+    : '';
+
+  const footer = `<div class="p-docfooter"><span><b>PocketDevs</b></span><span>Confidential</span><span>www.pocketdevs.ph</span></div>`;
+
+  const art = $('proposal');
+  art.innerHTML = cover + itemsSection + paymentSection + footer;
+  art.setAttribute('contenteditable', 'true');
+  art.setAttribute('spellcheck', 'false');
+  $('downloadBtn').disabled = false;
+  $('editorToolbar').hidden = false;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function generateInvoice() {
+  const intake = collectInvoiceIntake();
+  const items = collectLineItems();
+  if (!intake.client && !items.length) {
+    setStatus('error', 'Fill in the client details or add at least one line item.');
+    return;
+  }
+
+  const total = items.reduce((sum, i) => sum + i.amount, 0);
+  const data = {
+    docType: 'invoice',
+    meta: {
+      documentNumber: intake.invoiceNumber || '[TBD]',
+      title: `Invoice — ${intake.client || 'Client'}`,
+      invoiceDate: intake.invoiceDate,
+      dueDate: intake.dueDate,
+      currency: intake.currency,
+      currencySymbol: intake.currencySymbol,
+      locale: intake.locale,
+      paymentDetails: intake.paymentDetails,
+    },
+    client: { company: intake.client, contactName: intake.contact, tin: intake.clientTin || '[TBD]' },
+    preparedBy: { company: intake.company, tin: intake.tin || '[TBD]' },
+    items,
+    total,
+  };
+
+  renderInvoice(data);
+
+  try {
+    const { error: saveErr } = await saveProposal(data);
+    if (saveErr && saveErr !== 'not-authenticated' && saveErr !== 'offline') {
+      console.warn('Could not save invoice to history:', saveErr);
+    } else if (!saveErr) {
+      refreshHistory();
+    }
+  } catch (e) { /* history is optional — ignore */ }
+
+  setStatus('ok', `Invoice generated! Click any text to edit, then <b>Download PDF</b>.`);
+}
+
 /* ---------- Rich text editor toolbar ---------- */
 (() => {
   const editor = $('proposal');
@@ -703,6 +879,18 @@ async function updateAuthState() {
   }
 }
 
+/* ---------- Document dispatch ---------- */
+function openDocument(content) {
+  if (!content) return;
+  if (content.docType === 'invoice') {
+    setMode('invoice');
+    renderInvoice(content);
+  } else {
+    setMode('proposal');
+    render(content);
+  }
+}
+
 /* ---------- History ---------- */
 async function refreshHistory() {
   const list = $('historyList');
@@ -715,7 +903,7 @@ async function refreshHistory() {
     list.innerHTML = items.map(p => `
       <div class="history-item" data-id="${p.id}">
         <div class="history-item__body">
-          <div class="history-item__title">${esc(p.project_title || 'Untitled')}</div>
+          <div class="history-item__title">${esc(p.project_title || 'Untitled')}${p.content && p.content.docType === 'invoice' ? '<span class="history-item__type">Invoice</span>' : ''}</div>
           <div class="history-item__meta">${esc(p.client_name || '')} · ${esc(p.doc_number || '')}</div>
         </div>
         <button type="button" class="history-item__delete" title="Delete proposal" aria-label="Delete proposal">&times;</button>
@@ -725,7 +913,7 @@ async function refreshHistory() {
     list.querySelectorAll('.history-item').forEach(el => {
       el.querySelector('.history-item__body').onclick = () => {
         const p = items.find(i => i.id === el.dataset.id);
-        if (p && p.content) render(p.content);
+        if (p && p.content) openDocument(p.content);
       };
       el.querySelector('.history-item__delete').onclick = async (e) => {
         e.stopPropagation();
@@ -775,9 +963,11 @@ function renderDashboardGrid(items) {
     const client = esc(p.client_name || '');
     const docNo = esc(p.doc_number || '');
     const updated = p.updated_at ? new Date(p.updated_at).toLocaleDateString(getLocale(), { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+    const isInvoice = p.content && p.content.docType === 'invoice';
     return `
       <div class="doc-card" data-id="${p.id}">
         <button type="button" class="doc-card__delete" title="Delete document" aria-label="Delete document">&times;</button>
+        ${isInvoice ? '<div class="doc-card__type">Invoice</div>' : ''}
         <div class="doc-card__thumb">
           <img src="assets/logo.svg" class="js-logo" />
           <div class="doc-card__thumb-title">${title}</div>
@@ -795,7 +985,7 @@ function renderDashboardGrid(items) {
     el.addEventListener('click', () => {
       const p = dashboardItems.find((i) => i.id === el.dataset.id);
       if (p && p.content) {
-        render(p.content);
+        openDocument(p.content);
         hideDashboardModal();
       }
     });
@@ -851,6 +1041,29 @@ function autofillMeta() {
   $('f_docno').value = freshDocNo();
   $('f_date').value = formatToday();
 }
+function freshInvoiceNo() {
+  const now = new Date();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  return `INV-${now.getFullYear()}-${mm}${dd}`;
+}
+function autofillInvoiceMeta() {
+  $('f_inv_no').value = freshInvoiceNo();
+  $('f_inv_date').value = new Date().toLocaleDateString(getLocale('f_inv_locale'), { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+/* ---------- Mode switching ---------- */
+function setMode(mode) {
+  document.querySelectorAll('.mode-tab').forEach((tab) => {
+    const active = tab.dataset.mode === mode;
+    tab.classList.toggle('mode-tab--active', active);
+    tab.setAttribute('aria-selected', String(active));
+  });
+  document.querySelectorAll('[data-mode]').forEach((el) => {
+    if (el.classList.contains('mode-tab')) return;
+    el.hidden = el.dataset.mode !== mode;
+  });
+}
 
 /* ---------- Wiring ---------- */
 function initDropzone() {
@@ -904,6 +1117,8 @@ function init() {
     initDatePickers();
     applyLogo();
     autofillMeta();
+    autofillInvoiceMeta();
+    addLineItemRow();
     updateAuthState();
 
     $('settingsBtn').addEventListener('click', () => { $('settingsPanel').hidden = !$('settingsPanel').hidden; });
@@ -911,8 +1126,15 @@ function init() {
     $('logoInput').addEventListener('change', (e) => handleLogo(e.target.files[0]));
     $('logoResetBtn').addEventListener('click', () => { localStorage.removeItem(LS_LOGO); applyLogo(); setStatus('ok', 'Reverted to the default logo.'); });
     $('f_locale').addEventListener('change', () => { $('f_date').value = formatToday(); });
+    $('f_inv_locale').addEventListener('change', () => { $('f_inv_date').value = new Date().toLocaleDateString(getLocale('f_inv_locale'), { year: 'numeric', month: 'long', day: 'numeric' }); });
+    $('f_inv_currency').addEventListener('change', updateInvoiceTotal);
+
+    $('modeTabProposal').addEventListener('click', () => setMode('proposal'));
+    $('modeTabInvoice').addEventListener('click', () => setMode('invoice'));
+    $('addItemBtn').addEventListener('click', () => addLineItemRow());
 
     $('generateBtn').addEventListener('click', generate);
+    $('generateInvoiceBtn').addEventListener('click', generateInvoice);
     $('downloadBtn').addEventListener('click', downloadPDF);
     $('authForm').addEventListener('submit', handleAuth);
     $('closeAuth').addEventListener('click', hideAuthModal);

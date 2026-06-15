@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=10" />
+  <link rel="stylesheet" href="styles.css?v=11" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
@@ -37,6 +37,12 @@
 
   <main class="layout">
     <aside class="composer no-print">
+      <!-- Mode switch -->
+      <div class="mode-tabs" role="tablist">
+        <button type="button" id="modeTabProposal" class="mode-tab mode-tab--active" data-mode="proposal" role="tab" aria-selected="true">Proposal</button>
+        <button type="button" id="modeTabInvoice" class="mode-tab" data-mode="invoice" role="tab" aria-selected="false">Invoice</button>
+      </div>
+
       <!-- Settings -->
       <section id="settingsPanel" class="card card--settings" hidden>
         <h2 class="card__title">Logo</h2>
@@ -50,7 +56,7 @@
       </section>
 
       <!-- Step 1 — Source -->
-      <section class="card">
+      <section class="card" data-mode="proposal">
         <div class="step"><span class="step__n">1</span><h2 class="card__title">Source document</h2></div>
         <label id="dropzone" class="dropzone" for="fileInput">
           <input id="fileInput" type="file" accept="application/pdf" hidden />
@@ -67,7 +73,7 @@
       </section>
 
       <!-- Step 2 — Details -->
-      <section class="card">
+      <section class="card" data-mode="proposal">
         <div class="step"><span class="step__n">2</span><h2 class="card__title">Proposal details</h2></div>
         <p class="card__hint">Anchors the AI to real facts. Leave blank to let the AI propose — blanks render as <code>[TBD]</code>, never invented numbers.</p>
 
@@ -134,10 +140,84 @@
         </div>
       </section>
 
+      <!-- Step 2 (Invoice) — Details -->
+      <section class="card" data-mode="invoice" hidden>
+        <div class="step"><span class="step__n">2</span><h2 class="card__title">Invoice details</h2></div>
+
+        <h3 class="card__subtitle">Bill to</h3>
+        <div class="grid2">
+          <div class="field"><label class="label">Client / company</label><input id="f_inv_client" class="input" placeholder="Acme Inc." /></div>
+          <div class="field"><label class="label">Contact name</label><input id="f_inv_contact" class="input" placeholder="Jomar Mansilungan" /></div>
+          <div class="field field--full"><label class="label">Client TIN</label><input id="f_inv_clientTin" class="input" placeholder="000-000-000-000" /></div>
+        </div>
+
+        <h3 class="card__subtitle">From</h3>
+        <div class="grid2">
+          <div class="field"><label class="label">Company</label><input id="f_inv_company" class="input" value="PocketDevs" /></div>
+          <div class="field"><label class="label">PocketDevs TIN</label><input id="f_inv_tin" class="input" placeholder="[TBD]" /></div>
+        </div>
+
+        <h3 class="card__subtitle">Invoice info</h3>
+        <div class="grid2">
+          <div class="field"><label class="label">Invoice no.</label><input id="f_inv_no" class="input" /></div>
+          <div class="field"><label class="label">Currency</label>
+            <select id="f_inv_currency" class="input">
+              <option value="PHP" data-symbol="₱">₱ PHP — Philippine Peso</option>
+              <option value="USD" data-symbol="$">$ USD — US Dollar</option>
+              <option value="EUR" data-symbol="€">€ EUR — Euro</option>
+              <option value="GBP" data-symbol="£">£ GBP — British Pound</option>
+              <option value="AUD" data-symbol="A$">A$ AUD — Australian Dollar</option>
+              <option value="SGD" data-symbol="S$">S$ SGD — Singapore Dollar</option>
+              <option value="CAD" data-symbol="C$">C$ CAD — Canadian Dollar</option>
+              <option value="AED" data-symbol="AED">AED — UAE Dirham</option>
+              <option value="JPY" data-symbol="¥">¥ JPY — Japanese Yen</option>
+            </select>
+          </div>
+          <div class="field"><label class="label">Invoice date</label>
+            <div class="date-field">
+              <input id="f_inv_date" class="input" />
+              <button type="button" class="date-field__btn" data-target="f_inv_date" aria-label="Pick a date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg></button>
+              <input type="date" id="f_inv_date_picker" class="date-field__picker" tabindex="-1" aria-hidden="true" />
+            </div>
+          </div>
+          <div class="field"><label class="label">Due date</label>
+            <div class="date-field">
+              <input id="f_inv_due" class="input" placeholder="e.g. July 19, 2026" />
+              <button type="button" class="date-field__btn" data-target="f_inv_due" aria-label="Pick a date"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg></button>
+              <input type="date" id="f_inv_due_picker" class="date-field__picker" tabindex="-1" aria-hidden="true" />
+            </div>
+          </div>
+          <div class="field"><label class="label">Locale (dates)</label>
+            <select id="f_inv_locale" class="input">
+              <option value="en-PH">English (Philippines)</option>
+              <option value="en-US">English (US)</option>
+              <option value="en-GB">English (UK)</option>
+              <option value="en-AU">English (Australia)</option>
+              <option value="en-SG">English (Singapore)</option>
+              <option value="en-CA">English (Canada)</option>
+            </select>
+          </div>
+        </div>
+
+        <h3 class="card__subtitle">Items</h3>
+        <div id="invoiceItems" class="line-items"></div>
+        <button type="button" id="addItemBtn" class="btn btn--ghost btn--sm">+ Add item</button>
+        <div class="line-items__total">
+          <span>Total</span>
+          <span id="invoiceItemsTotal">0.00</span>
+        </div>
+
+        <div class="field field--full">
+          <label class="label">Payment details <span class="label__opt">(optional)</span></label>
+          <textarea id="f_inv_paymentDetails" class="input textarea" rows="2" placeholder="e.g. Pay via Bank Transfer to BPI account 1234-5678-90."></textarea>
+        </div>
+      </section>
+
       <!-- Step 3 — Generate -->
       <section class="card">
         <div class="step"><span class="step__n">3</span><h2 class="card__title">Generate</h2></div>
-        <button id="generateBtn" class="btn btn--primary btn--block">Generate proposal</button>
+        <button id="generateBtn" class="btn btn--primary btn--block" data-mode="proposal">Generate proposal</button>
+        <button id="generateInvoiceBtn" class="btn btn--primary btn--block" data-mode="invoice" hidden>Generate invoice</button>
         <div id="status" class="status" hidden></div>
       </section>
     </aside>
@@ -244,6 +324,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=10"></script>
+  <script type="module" src="app.js?v=11"></script>
 </body>
 </html>
