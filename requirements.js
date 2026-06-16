@@ -1,4 +1,4 @@
-import { SUPABASE_URL, SUPABASE_ANON_KEY, getSession, signIn, signUp, signOut, onAuthChange } from './supabase.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY, getSession, signIn, signUp, signOut, onAuthChange, saveQuestionnaire, fetchSubmissionById } from './supabase.js';
 
 const REQ_API_URL = `${SUPABASE_URL}/functions/v1/generate-requirements`;
 
@@ -309,6 +309,7 @@ const STEPS = [
 let answers = {};
 let currentStep = 0;
 let isShareMode = false;
+let currentSubmissionId = null;
 
 function getActiveSteps() {
   return STEPS.filter((s) => !s.when || s.when(answers));
@@ -682,6 +683,22 @@ async function generateSRD() {
     if (!srd) { setStatus('error', 'No SRD returned. Please try again.'); return; }
     renderSRD(srd);
     $('rqStatus').hidden = true;
+    // Best-effort save to DB
+    const docNo = `SRD-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}`;
+    const submissionData = {
+      ...(currentSubmissionId ? { id: currentSubmissionId } : {}),
+      client_name: answers.contactCompany || answers.contactName || '',
+      project_name: answers.projectName || srd.projectName || '',
+      project_type: answers.projectType || '',
+      answers,
+      srd_content: srd,
+      doc_number: docNo,
+      status: 'srd_generated',
+    };
+    try {
+      const { data: saved, error } = await saveQuestionnaire(submissionData);
+      if (!error && saved && saved[0]) currentSubmissionId = saved[0].id;
+    } catch { /* non-blocking */ }
   } catch (err) {
     setStatus('error', `Network error: ${esc(err.message)}`);
   } finally {
@@ -822,7 +839,33 @@ function downloadPDF() {
 })();
 
 /* ---------- Init ---------- */
-function init() {
+async function init() {
+  // Check for ?submission=ID (from dashboard link)
+  const urlParams = new URLSearchParams(window.location.search);
+  const submissionId = urlParams.get('submission');
+  if (submissionId) {
+    await updateAuthState();
+    const submission = await fetchSubmissionById(submissionId);
+    if (submission) {
+      currentSubmissionId = submission.id;
+      answers = submission.answers || {};
+      isShareMode = true;
+      showReview();
+      if (submission.srd_content) {
+        renderSRD(submission.srd_content);
+      }
+      // Clean up URL param without page reload
+      const url = new URL(window.location.href);
+      url.searchParams.delete('submission');
+      window.history.replaceState({}, '', url.toString());
+    } else {
+      renderStep();
+    }
+    // Skip the rest of init's auth call since we already did it
+    setupWiring();
+    return;
+  }
+
   const hash = window.location.hash;
   if (hash && hash.includes('share=')) {
     if (restoreFromShare(hash)) {
@@ -835,6 +878,10 @@ function init() {
     renderStep();
   }
 
+  setupWiring();
+}
+
+function setupWiring() {
   $('rqNextBtn').addEventListener('click', goNext);
   $('rqBackBtn').addEventListener('click', goBack);
   $('rqEditBtn').addEventListener('click', showWizard);

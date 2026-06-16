@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PocketDevs — My Documents</title>
+  <link rel="icon" href="assets/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=13" />
+</head>
+<body>
+  <header class="appbar">
+    <div class="appbar__brand">
+      <img src="assets/logo.svg" alt="PocketDevs" class="appbar__logo" />
+      <span class="appbar__divider"></span>
+      <span class="appbar__title">My Documents</span>
+    </div>
+    <div class="appbar__actions">
+      <a href="index.html" class="btn btn--ghost">Proposal Generator</a>
+      <a href="requirements.html" class="btn btn--ghost">Requirements</a>
+      <span id="authGreeting" class="appbar__greeting" hidden></span>
+      <button id="authNavBtn" class="btn btn--ghost" type="button">Login</button>
+      <div id="userMenu" class="user-menu" hidden>
+        <button id="userMenuBtn" class="user-menu__avatar" type="button" aria-haspopup="true" aria-expanded="false"></button>
+        <div id="userMenuDropdown" class="user-menu__dropdown" hidden>
+          <button id="userMenuLogout" class="user-menu__item" type="button">Log out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="dash-page">
+
+    <!-- Login prompt -->
+    <div id="loginPrompt" class="dash-page__login" hidden>
+      <img src="assets/logo.svg" alt="PocketDevs" class="dash-page__login-logo" />
+      <h2>Sign in to view your documents</h2>
+      <p>All your proposals, invoices, and requirement questionnaires in one place.</p>
+      <button type="button" id="loginPromptBtn" class="btn btn--primary">Sign in</button>
+    </div>
+
+    <!-- Dashboard content -->
+    <div id="dashContent" hidden>
+      <div class="dash-page__hero">
+        <h1 class="dash-page__title">My Documents</h1>
+        <p class="dash-page__subtitle">All your proposals, invoices, and requirement questionnaires</p>
+      </div>
+
+      <div class="dash-page__controls">
+        <div class="dash-page__tabs" role="tablist">
+          <button type="button" class="dash-page__tab dash-page__tab--active" data-type="all" role="tab" aria-selected="true">All</button>
+          <button type="button" class="dash-page__tab" data-type="proposal" role="tab" aria-selected="false">Proposals</button>
+          <button type="button" class="dash-page__tab" data-type="invoice" role="tab" aria-selected="false">Invoices</button>
+          <button type="button" class="dash-page__tab" data-type="questionnaire" role="tab" aria-selected="false">Questionnaires</button>
+        </div>
+        <input id="dashSearch" class="input dash-page__search" type="search" placeholder="Search by title, client, or doc no." />
+      </div>
+
+      <div id="dashGrid" class="dash-page__grid">
+        <p class="dash-page__empty">Loading…</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Auth Modal -->
+  <div id="authModal" class="modal">
+    <div class="modal__content card">
+      <button id="closeAuth" class="modal__close">&times;</button>
+      <h2 class="card__title" id="authTitle">Sign in to PocketDevs</h2>
+      <div class="grid2" role="tablist">
+        <button type="button" id="authTabLogin" class="btn btn--primary" aria-pressed="true">Login</button>
+        <button type="button" id="authTabSignup" class="btn btn--ghost" aria-pressed="false">Sign Up</button>
+      </div>
+      <form id="authForm">
+        <div class="field" id="authNameField" hidden>
+          <label class="label">Name</label>
+          <input id="authName" type="text" class="input" autocomplete="name" />
+        </div>
+        <div class="field">
+          <label class="label">Email</label>
+          <input id="authEmail" type="email" class="input" required />
+        </div>
+        <div class="field">
+          <label class="label">Password</label>
+          <input id="authPassword" type="password" class="input" required minlength="6" />
+        </div>
+        <button type="submit" id="authSubmit" class="btn btn--primary btn--block">Login</button>
+        <div id="authError" class="status status--error" hidden></div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="dashboard.js?v=1"></script>
+</body>
+</html>

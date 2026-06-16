@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=12" />
+  <link rel="stylesheet" href="styles.css?v=13" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
@@ -20,6 +20,8 @@
       <span class="appbar__title">Proposal Generator</span>
     </div>
     <div class="appbar__actions">
+      <a href="dashboard.html" class="btn btn--ghost">My Documents</a>
+      <a href="requirements.html" class="btn btn--ghost">Requirements</a>
       <span id="authGreeting" class="appbar__greeting" hidden></span>
       <button id="authNavBtn" class="btn btn--ghost">Login</button>
       <button id="settingsBtn" class="btn btn--ghost" type="button">Settings</button>
@@ -294,6 +296,7 @@
           <button type="button" class="dashboard__tab dashboard__tab--active" data-type="all">All</button>
           <button type="button" class="dashboard__tab" data-type="proposal">Proposals</button>
           <button type="button" class="dashboard__tab" data-type="invoice">Invoices</button>
+          <button type="button" class="dashboard__tab" data-type="questionnaire">Questionnaires</button>
         </div>
         <input id="dashboardSearch" class="input dashboard__search" type="search" placeholder="Search by title, client, or doc no." />
       </div>
@@ -329,6 +332,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=12"></script>
+  <script type="module" src="app.js?v=13"></script>
 </body>
 </html>

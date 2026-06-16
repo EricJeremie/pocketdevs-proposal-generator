@@ -5,7 +5,7 @@
    ============================================================ */
 'use strict';
 
-import { getSession, signIn, signUp, signOut, saveProposal, fetchUserProposals, deleteProposal, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
+import { getSession, signIn, signUp, signOut, saveProposal, fetchUserProposals, deleteProposal, fetchProposalById, fetchUserQuestionnaires, deleteQuestionnaire, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
 
 /* ---------- Constants ---------- */
 const MODEL = 'gemini-2.5-flash';
@@ -862,6 +862,18 @@ async function updateAuthState() {
       $('openDashboardBtn').hidden = false;
 
       refreshHistory();
+
+      // Auto-open a document when navigated from dashboard (?open=ID)
+      const openId = new URLSearchParams(window.location.search).get('open');
+      if (openId) {
+        try {
+          const proposal = await fetchProposalById(openId);
+          if (proposal && proposal.content) openDocument(proposal.content);
+        } catch { /* non-blocking */ }
+        const url = new URL(window.location.href);
+        url.searchParams.delete('open');
+        window.history.replaceState({}, '', url.toString());
+      }
     } else {
       navBtn.hidden = false;
       navBtn.textContent = 'Login';
@@ -942,8 +954,21 @@ async function refreshHistory() {
 }
 
 /* ---------- Dashboard ---------- */
-let dashboardItems = [];
+let dashboardProposals = [];
+let dashboardQuestionnaires = [];
 let dashboardTypeFilter = 'all';
+
+function getDashboardDocType(item) {
+  if (item._type === 'questionnaire') return 'questionnaire';
+  if (item.content && item.content.docType === 'invoice') return 'invoice';
+  return 'proposal';
+}
+
+function mergeDashboardItems() {
+  const proposals = dashboardProposals.map(p => ({ ...p, _type: p.content?.docType === 'invoice' ? 'invoice' : 'proposal' }));
+  const questionnaires = dashboardQuestionnaires.map(q => ({ ...q, _type: 'questionnaire' }));
+  return [...proposals, ...questionnaires].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+}
 
 function showDashboardModal() {
   $('dashboardModal').classList.add('modal--visible');
@@ -967,12 +992,17 @@ async function refreshDashboard() {
   const grid = $('dashboardGrid');
   grid.innerHTML = '<p class="dashboard__empty">Loading…</p>';
   try {
-    dashboardItems = await fetchUserProposals();
-    renderDashboardGrid(dashboardItems);
+    [dashboardProposals, dashboardQuestionnaires] = await Promise.all([
+      fetchUserProposals(),
+      fetchUserQuestionnaires(),
+    ]);
+    renderDashboardGrid(mergeDashboardItems());
   } catch (err) {
     grid.innerHTML = '<p class="dashboard__empty">Documents temporarily unavailable.</p>';
   }
 }
+
+const DASH_TYPE_LABELS = { proposal: 'Proposal', invoice: 'Invoice', questionnaire: 'Questionnaire' };
 
 function renderDashboardGrid(items) {
   const grid = $('dashboardGrid');
@@ -980,32 +1010,41 @@ function renderDashboardGrid(items) {
     grid.innerHTML = '<p class="dashboard__empty">No documents found.</p>';
     return;
   }
-  grid.innerHTML = items.map((p) => {
-    const title = esc(p.project_title || 'Untitled');
-    const client = esc(p.client_name || '');
-    const docNo = esc(p.doc_number || '');
-    const updated = p.updated_at ? new Date(p.updated_at).toLocaleDateString(getLocale(), { year: 'numeric', month: 'short', day: 'numeric' }) : '';
-    const isInvoice = p.content && p.content.docType === 'invoice';
+  grid.innerHTML = items.map((item) => {
+    const type = getDashboardDocType(item);
+    const title = esc(item.project_title || item.project_name || 'Untitled');
+    const client = esc(item.client_name || '');
+    const docNo = esc(item.doc_number || '');
+    const updated = item.updated_at ? new Date(item.updated_at).toLocaleDateString(getLocale(), { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+    const meta = [client, docNo].filter(Boolean).join(' · ');
     return `
-      <div class="doc-card" data-id="${p.id}">
+      <div class="doc-card" data-id="${item.id}" data-type="${type}">
         <button type="button" class="doc-card__delete" title="Delete document" aria-label="Delete document">&times;</button>
-        ${isInvoice ? '<div class="doc-card__type">Invoice</div>' : ''}
+        <div class="doc-card__type doc-card__type--${type}">${DASH_TYPE_LABELS[type]}</div>
         <div class="doc-card__thumb">
           <img src="assets/logo.svg" class="js-logo" />
           <div class="doc-card__thumb-title">${title}</div>
         </div>
         <div class="doc-card__body">
           <div class="doc-card__title" title="${title}">${title}</div>
-          <div class="doc-card__meta" title="${client}${docNo ? ' · ' + docNo : ''}">${client}${docNo ? ' · ' + docNo : ''}</div>
+          ${meta ? `<div class="doc-card__meta">${meta}</div>` : ''}
           <div class="doc-card__meta">${updated}</div>
         </div>
       </div>
     `;
   }).join('');
 
+  const allItems = mergeDashboardItems();
   grid.querySelectorAll('.doc-card').forEach((el) => {
+    const id = el.dataset.id;
+    const type = el.dataset.type;
     el.addEventListener('click', () => {
-      const p = dashboardItems.find((i) => i.id === el.dataset.id);
+      if (type === 'questionnaire') {
+        hideDashboardModal();
+        window.location.href = `requirements.html?submission=${encodeURIComponent(id)}`;
+        return;
+      }
+      const p = allItems.find((i) => i.id === id);
       if (p && p.content) {
         openDocument(p.content);
         hideDashboardModal();
@@ -1013,9 +1052,14 @@ function renderDashboardGrid(items) {
     });
     el.querySelector('.doc-card__delete').addEventListener('click', async (e) => {
       e.stopPropagation();
-      if (!confirm('Delete this saved proposal? This cannot be undone.')) return;
-      const { error } = await deleteProposal(el.dataset.id);
-      if (error) { alert('Could not delete proposal: ' + (error.message || error)); return; }
+      if (!confirm('Delete this document? This cannot be undone.')) return;
+      if (type === 'questionnaire') {
+        const { error } = await deleteQuestionnaire(id);
+        if (error) { alert('Could not delete: ' + (error.message || error)); return; }
+      } else {
+        const { error } = await deleteProposal(id);
+        if (error) { alert('Could not delete: ' + (error.message || error)); return; }
+      }
       refreshDashboard();
       refreshHistory();
     });
@@ -1024,16 +1068,14 @@ function renderDashboardGrid(items) {
 
 function filterDashboard(query) {
   const q = query.trim().toLowerCase();
-  let filtered = dashboardItems;
+  let filtered = mergeDashboardItems();
   if (dashboardTypeFilter !== 'all') {
-    filtered = filtered.filter((p) => {
-      const isInvoice = p.content && p.content.docType === 'invoice';
-      return dashboardTypeFilter === 'invoice' ? isInvoice : !isInvoice;
-    });
+    filtered = filtered.filter((item) => getDashboardDocType(item) === dashboardTypeFilter);
   }
   if (q) {
-    filtered = filtered.filter((p) => {
-      return [p.project_title, p.client_name, p.doc_number].some((v) => (v || '').toLowerCase().includes(q));
+    filtered = filtered.filter((item) => {
+      return [item.project_title, item.project_name, item.client_name, item.doc_number]
+        .some((v) => (v || '').toLowerCase().includes(q));
     });
   }
   renderDashboardGrid(filtered);

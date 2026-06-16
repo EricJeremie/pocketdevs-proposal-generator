@@ -137,3 +137,117 @@ export async function fetchUserProposals() {
     return [];
   }
 }
+
+export async function fetchProposalById(id) {
+  const sb = await getClient();
+  if (!sb) return null;
+  const session = await getSession();
+  if (!session) return null;
+  try {
+    const { data, error } = await sb
+      .from('proposals')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', session.user.id)
+      .single();
+    if (error) { console.warn('Error fetching proposal by id:', error.message); return null; }
+    return data;
+  } catch (err) {
+    console.warn('Fetch proposal by id exception:', err && err.message);
+    return null;
+  }
+}
+
+export async function saveQuestionnaire(data) {
+  const sb = await getClient();
+  if (!sb) return { error: 'offline' };
+  const session = await getSession();
+  if (!session) return { error: 'not-authenticated' };
+  try {
+    const row = {
+      user_id: session.user.id,
+      client_name: data.client_name || null,
+      project_name: data.project_name || null,
+      project_type: data.project_type || null,
+      answers: data.answers || {},
+      srd_content: data.srd_content || null,
+      doc_number: data.doc_number || null,
+      status: data.status || 'submitted',
+      updated_at: new Date().toISOString(),
+    };
+    if (data.id) {
+      const { data: d, error } = await sb
+        .from('questionnaire_submissions')
+        .update(row)
+        .eq('id', data.id)
+        .eq('user_id', session.user.id)
+        .select();
+      return { data: d, error };
+    }
+    const { data: d, error } = await sb
+      .from('questionnaire_submissions')
+      .insert(row)
+      .select();
+    return { data: d, error };
+  } catch (err) {
+    console.error('Save questionnaire failed:', err);
+    return { error: err.message };
+  }
+}
+
+export async function fetchUserQuestionnaires() {
+  const sb = await getClient();
+  if (!sb) return [];
+  const session = await getSession();
+  if (!session) return [];
+  try {
+    const { data, error } = await sb
+      .from('questionnaire_submissions')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('updated_at', { ascending: false });
+    if (error) { console.warn('Error fetching questionnaires:', error.message); return []; }
+    return data || [];
+  } catch (err) {
+    console.warn('Fetch questionnaires exception:', err && err.message);
+    return [];
+  }
+}
+
+export async function deleteQuestionnaire(id) {
+  const sb = await getClient();
+  if (!sb) return { error: 'offline' };
+  const session = await getSession();
+  if (!session) return { error: 'not-authenticated' };
+  try {
+    const { error } = await sb
+      .from('questionnaire_submissions')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', session.user.id);
+    return { error };
+  } catch (err) {
+    console.error('Delete questionnaire failed:', err);
+    return { error: err.message };
+  }
+}
+
+export async function fetchSubmissionById(id) {
+  const sb = await getClient();
+  if (!sb) return null;
+  const session = await getSession();
+  if (!session) return null;
+  try {
+    const { data, error } = await sb
+      .from('questionnaire_submissions')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', session.user.id)
+      .single();
+    if (error) { console.warn('Error fetching submission by id:', error.message); return null; }
+    return data;
+  } catch (err) {
+    console.warn('Fetch submission by id exception:', err && err.message);
+    return null;
+  }
+}
