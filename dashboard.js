@@ -197,7 +197,7 @@ async function handleAuth(e) {
   errEl.hidden = true;
   $('authSubmit').disabled = true;
   try {
-    const { error } = authMode === 'login'
+    const { data, error } = authMode === 'login'
       ? await signIn(email, password)
       : await signUp(email, password, name);
     if (error) {
@@ -205,14 +205,33 @@ async function handleAuth(e) {
       errEl.hidden = false;
     } else {
       hideAuthModal();
-      updateAuthState();
+      updateAuthState(data?.session);
     }
+  } catch (err) {
+    errEl.textContent = 'Something went wrong. Please try again.';
+    errEl.hidden = false;
   } finally {
     $('authSubmit').disabled = false;
   }
 }
 
 function init() {
+  // If no session token in storage, skip loading state and show login prompt immediately.
+  // If there is one, keep showing "Loading…" until Supabase confirms or times out.
+  try {
+    const hasStored = Object.keys(localStorage).some((k) => k.includes('-auth-token'));
+    if (!hasStored) {
+      $('authLoading')?.remove();
+      $('loginPrompt').hidden = false;
+    }
+  } catch { /* ignore */ }
+
+  // Fallback: if auth hasn't resolved in 6 s (CDN slow/failed), show login prompt.
+  setTimeout(() => {
+    const loading = $('authLoading');
+    if (loading) { loading.remove(); $('loginPrompt').hidden = false; }
+  }, 6000);
+
   onAuthChange((session) => updateAuthState(session));
 
   document.querySelectorAll('.dash-page__tab').forEach(tab => {

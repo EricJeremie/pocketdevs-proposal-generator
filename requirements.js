@@ -636,7 +636,7 @@ async function handleAuth(e) {
   errEl.hidden = true;
   $('authSubmit').disabled = true;
   try {
-    const { error } = authMode === 'login'
+    const { data, error } = authMode === 'login'
       ? await signIn(email, password)
       : await signUp(email, password, name);
     if (error) {
@@ -645,8 +645,12 @@ async function handleAuth(e) {
       errEl.hidden = false;
     } else {
       hideAuthModal();
-      updateAuthState();
+      updateAuthState(data?.session);
     }
+  } catch (err) {
+    errEl.textContent = 'Something went wrong. Please try again.';
+    errEl.className = 'status status--error';
+    errEl.hidden = false;
   } finally {
     $('authSubmit').disabled = false;
   }
@@ -948,6 +952,8 @@ function setupWiring() {
 
   // Keyboard navigation (Typeform-style)
   document.addEventListener('keydown', (e) => {
+    // Never intercept keyboard events when the auth modal is open
+    if ($('authModal').classList.contains('modal--visible')) return;
     if ($('rqWizard').hidden) return;
     const tag = e.target.tagName;
     const typing = tag === 'INPUT' || tag === 'TEXTAREA';
@@ -972,6 +978,13 @@ function setupWiring() {
       goNext();
     }
   });
+
+  // Optimistically hide the Login button if there's a stored session,
+  // so the user doesn't see a flash while Supabase initializes.
+  try {
+    const hasStored = Object.keys(localStorage).some((k) => k.includes('-auth-token'));
+    if (hasStored) $('rqAuthBtn').hidden = true;
+  } catch { /* ignore */ }
 
   onAuthChange((session) => updateAuthState(session));
 }
