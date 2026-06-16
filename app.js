@@ -815,6 +815,11 @@ async function handleAuth(e) {
   const email = $('authEmail').value;
   const password = $('authPassword').value;
   const isSignUp = authMode === 'signup';
+  const errEl = $('authError');
+
+  errEl.hidden = true;
+  errEl.className = 'status status--error';
+  $('authSubmit').disabled = true;
 
   try {
     const { data, error } = isSignUp
@@ -822,15 +827,24 @@ async function handleAuth(e) {
       : await signIn(email, password);
 
     if (error) {
-      showToast(error.message, 'error');
+      errEl.textContent = error.message || String(error);
+      errEl.hidden = false;
     } else {
       const signedIn = !isSignUp || (data && data.session);
-      showToast(signedIn ? 'Welcome!' : 'Check your email to confirm sign up!', 'success');
-      hideAuthModal();
-      updateAuthState();
+      if (!signedIn) {
+        errEl.textContent = 'Check your email to confirm sign up!';
+        errEl.className = 'status status--ok';
+        errEl.hidden = false;
+      } else {
+        hideAuthModal();
+        updateAuthState();
+      }
     }
   } catch (err) {
-    showToast('Authentication failed unexpectedly.', 'error');
+    errEl.textContent = 'Authentication failed unexpectedly. Please try again.';
+    errEl.hidden = false;
+  } finally {
+    $('authSubmit').disabled = false;
   }
 }
 
@@ -1184,6 +1198,11 @@ function initDatePickers() {
 }
 
 function init() {
+  // Wire auth button immediately — OUTSIDE try/catch so it's always wired
+  // even if other initialization fails.
+  $('authNavBtn').addEventListener('click', showAuthModal);
+  $('authModal').addEventListener('click', (e) => { if (e.target === $('authModal')) hideAuthModal(); });
+
   try {
     initDropzone();
     initDatePickers();
@@ -1191,8 +1210,6 @@ function init() {
     autofillMeta();
     autofillInvoiceMeta();
     addLineItemRow();
-    // Wire Login button immediately — don't wait for the async session check
-    $('authNavBtn').addEventListener('click', showAuthModal);
     updateAuthState();
 
     $('settingsBtn').addEventListener('click', () => { $('settingsPanel').hidden = !$('settingsPanel').hidden; });
