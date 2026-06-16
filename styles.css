@@ -1,6 +1,9 @@
 /* ============================================================
    PocketDevs Design System & UI Components (light theme)
    ============================================================ */
+
+/* Ensure [hidden] always wins over display rules set by class selectors */
+[hidden] { display: none !important; }
 :root {
   --bg: #edeff2;
   --bg-card: #ffffff;
