@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=14" />
-  <link rel="stylesheet" href="requirements.css?v=1" />
+  <link rel="stylesheet" href="requirements.css?v=2" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
@@ -39,25 +39,20 @@
 
     <!-- ===== WIZARD ===== -->
     <div id="rqWizard">
-      <div class="rq-hero no-print">
-        <h1 class="rq-hero__title">Tell us about your project</h1>
-        <p class="rq-hero__sub">Answer a few questions so we can build a detailed requirements document — no more back-and-forth.</p>
-      </div>
+      <div class="tf-stage" id="rqStepCard"></div>
 
-      <div class="rq-progress-wrap no-print">
-        <div class="rq-progress">
-          <div id="rqProgressBar" class="rq-progress__bar" style="width:0%"></div>
+      <div class="tf-progress no-print"><div id="rqProgressBar" class="tf-progress__bar" style="width:0%"></div></div>
+
+      <div class="tf-controls no-print">
+        <div id="rqStepLabel" class="tf-controls__count"></div>
+        <div class="tf-navbtns">
+          <button id="rqBackBtn" class="tf-navbtn" type="button" title="Previous" aria-label="Previous question">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+          </button>
+          <button id="rqNextBtn" class="tf-navbtn" type="button" title="Next" aria-label="Next question">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
         </div>
-        <div id="rqStepLabel" class="rq-step-label"></div>
-      </div>
-
-      <div class="card rq-card" id="rqStepCard">
-        <div id="rqStepContent"></div>
-      </div>
-
-      <div class="rq-nav no-print">
-        <button id="rqBackBtn" class="btn btn--ghost" type="button">Back</button>
-        <button id="rqNextBtn" class="btn btn--primary" type="button">Next</button>
       </div>
     </div>
 
@@ -133,6 +128,6 @@
     </div>
   </div>
 
-  <script type="module" src="requirements.js?v=3"></script>
+  <script type="module" src="requirements.js?v=4"></script>
 </body>
 </html>

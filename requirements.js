@@ -307,7 +307,7 @@ const STEPS = [
 
 /* ---------- State ---------- */
 let answers = {};
-let currentStep = 0;
+let currentQuestionIndex = 0;
 let isShareMode = false;
 let currentSubmissionId = null;
 
@@ -315,142 +315,158 @@ function getActiveSteps() {
   return STEPS.filter((s) => !s.when || s.when(answers));
 }
 
-/* ---------- Render step ---------- */
-function renderQuestion(qid, value) {
+/* Flatten the active steps into a single ordered list of questions, so the
+   wizard can present one question per screen (Typeform-style). */
+function getActiveQuestions() {
+  const out = [];
+  getActiveSteps().forEach((step) => {
+    step.questions.forEach((qid) => out.push({ qid, stepId: step.id, stepTitle: step.title }));
+  });
+  return out;
+}
+
+/* ---------- Render one question (Typeform-style) ---------- */
+function renderField(qid, value) {
   const q = Q[qid];
   if (!q) return '';
   const val = value != null ? value : '';
   const id = `rq_${qid}`;
 
-  const helpHtml = q.help ? `<p class="rq-field-help">${q.help.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>` : '';
-
   if (q.type === 'text' || q.type === 'email') {
-    return `<div class="field">
-      <label class="label" for="${id}">${esc(q.label)}${q.required ? ' <span class="label__req">*</span>' : ''}</label>
-      ${helpHtml}
-      <input id="${id}" name="${qid}" class="input" type="${q.type}" placeholder="${esc(q.placeholder || '')}" value="${esc(val)}" ${q.required ? 'required' : ''} />
-    </div>`;
+    return `<input id="${id}" name="${qid}" class="tf-input" type="${q.type}" placeholder="${esc(q.placeholder || 'Type your answer here…')}" value="${esc(val)}" autocomplete="off" />`;
   }
 
   if (q.type === 'textarea') {
-    return `<div class="field">
-      <label class="label" for="${id}">${esc(q.label)}${q.required ? ' <span class="label__req">*</span>' : ''}</label>
-      ${helpHtml}
-      <textarea id="${id}" name="${qid}" class="input textarea" rows="4" placeholder="${esc(q.placeholder || '')}" ${q.required ? 'required' : ''}>${esc(val)}</textarea>
-    </div>`;
+    return `<textarea id="${id}" name="${qid}" class="tf-input tf-input--area" rows="3" placeholder="${esc(q.placeholder || 'Type your answer here…')}">${esc(val)}</textarea>`;
   }
 
-  if (q.type === 'select') {
-    const opts = q.options.map((o) => `<option value="${esc(o)}" ${val === o ? 'selected' : ''}>${esc(o)}</option>`).join('');
-    return `<div class="field">
-      <label class="label" for="${id}">${esc(q.label)}</label>
-      ${helpHtml}
-      <select id="${id}" name="${qid}" class="input"><option value="">Select…</option>${opts}</select>
-    </div>`;
-  }
-
-  if (q.type === 'radio') {
-    const cards = q.options.map((o) => {
-      const checked = val === o.value ? 'checked' : '';
-      return `<label class="rq-choice ${checked ? 'rq-choice--checked' : ''}">
-        <input type="radio" name="${qid}" value="${esc(o.value)}" ${checked} class="rq-choice__input" />
-        <span class="rq-choice__label">${esc(o.label)}</span>
-        ${o.hint ? `<span class="rq-choice__hint">${esc(o.hint)}</span>` : ''}
-      </label>`;
+  if (q.type === 'radio' || q.type === 'select') {
+    const opts = q.type === 'select'
+      ? q.options.map((o) => ({ value: o, label: o }))
+      : q.options.map((o) => ({ value: o.value, label: o.label, hint: o.hint }));
+    const cards = opts.map((o, i) => {
+      const sel = val === o.value;
+      return `<button type="button" class="tf-choice ${sel ? 'tf-choice--selected' : ''}" data-value="${esc(o.value)}" data-qid="${qid}">
+        <span class="tf-choice__key">${String.fromCharCode(65 + i)}</span>
+        <span class="tf-choice__main"><span class="tf-choice__label">${esc(o.label)}</span>${o.hint ? `<span class="tf-choice__hint">${esc(o.hint)}</span>` : ''}</span>
+        <span class="tf-choice__tick" aria-hidden="true">✓</span>
+      </button>`;
     }).join('');
-    return `<div class="field">
-      <label class="label">${esc(q.label)}${q.required ? ' <span class="label__req">*</span>' : ''}</label>
-      ${helpHtml}
-      <div class="rq-choices" data-qid="${qid}">${cards}</div>
-    </div>`;
+    return `<div class="tf-choices" data-qid="${qid}" data-multi="false">${cards}</div>`;
   }
 
   if (q.type === 'checkboxes') {
     const checked = Array.isArray(val) ? val : [];
-    const boxes = q.options.map((o) => {
-      const isChecked = checked.includes(o) ? 'checked' : '';
-      return `<label class="rq-check ${isChecked ? 'rq-check--checked' : ''}">
-        <input type="checkbox" name="${qid}" value="${esc(o)}" ${isChecked} class="rq-check__input" />
-        <span class="rq-check__label">${esc(o)}</span>
-      </label>`;
+    const cards = q.options.map((o, i) => {
+      const sel = checked.includes(o);
+      return `<button type="button" class="tf-choice ${sel ? 'tf-choice--selected' : ''}" data-value="${esc(o)}" data-qid="${qid}">
+        <span class="tf-choice__key">${String.fromCharCode(65 + i)}</span>
+        <span class="tf-choice__main"><span class="tf-choice__label">${esc(o)}</span></span>
+        <span class="tf-choice__tick" aria-hidden="true">✓</span>
+      </button>`;
     }).join('');
-    return `<div class="field">
-      <label class="label">${esc(q.label)}</label>
-      ${helpHtml}
-      <div class="rq-checks" data-qid="${qid}">${boxes}</div>
-    </div>`;
+    return `<div class="tf-choices tf-choices--multi" data-qid="${qid}" data-multi="true">${cards}</div>`;
   }
 
   return '';
 }
 
-function renderStep() {
-  const active = getActiveSteps();
-  const step = active[currentStep];
-  if (!step) return;
+function renderCurrentQuestion() {
+  const active = getActiveQuestions();
+  if (!active.length) return;
+  if (currentQuestionIndex < 0) currentQuestionIndex = 0;
+  if (currentQuestionIndex > active.length - 1) currentQuestionIndex = active.length - 1;
 
-  $('rqStepContent').innerHTML = `
-    <h2 class="rq-step__title">${esc(step.title)}</h2>
-    ${step.questions.map((qid) => renderQuestion(qid, answers[qid])).join('')}
+  const item = active[currentQuestionIndex];
+  const q = Q[item.qid];
+  const num = currentQuestionIndex + 1;
+  const isLast = currentQuestionIndex === active.length - 1;
+  const isMulti = q.type === 'checkboxes';
+  const helpHtml = q.help ? `<p class="tf-q__help">${q.help.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>` : '';
+
+  $('rqStepCard').innerHTML = `
+    <div class="tf-q" data-qid="${item.qid}">
+      <div class="tf-q__num">${num} <span class="tf-q__arrow">→</span></div>
+      <div class="tf-q__head">
+        <h2 class="tf-q__title">${esc(q.label)}${q.required ? '<span class="tf-q__req">*</span>' : ''}</h2>
+        ${helpHtml}
+      </div>
+      <div class="tf-q__field">${renderField(item.qid, answers[item.qid])}</div>
+      <div class="tf-q__actions">
+        <button type="button" class="tf-ok" id="rqOkBtn">${isLast ? 'Review' : 'OK'} <span class="tf-ok__check">✓</span></button>
+        <span class="tf-q__keyhint">${isMulti ? 'select all that apply, then press <b>Enter ↵</b>' : 'press <b>Enter ↵</b>'}</span>
+      </div>
+    </div>
   `;
 
-  const progress = ((currentStep) / active.length) * 100;
-  $('rqProgressBar').style.width = `${progress}%`;
-  $('rqStepLabel').textContent = `Step ${currentStep + 1} of ${active.length}`;
-  $('rqBackBtn').hidden = currentStep === 0;
-  $('rqNextBtn').textContent = currentStep === active.length - 1 ? 'Review answers' : 'Next';
+  $('rqProgressBar').style.width = `${(currentQuestionIndex / active.length) * 100}%`;
+  $('rqStepLabel').textContent = `${num} of ${active.length}`;
+  $('rqBackBtn').disabled = currentQuestionIndex === 0;
 
-  // Wire radio choice highlight
-  $('rqStepCard').querySelectorAll('.rq-choices').forEach((group) => {
-    group.querySelectorAll('input[type="radio"]').forEach((radio) => {
-      radio.addEventListener('change', () => {
-        group.querySelectorAll('.rq-choice').forEach((c) => c.classList.remove('rq-choice--checked'));
-        radio.closest('.rq-choice')?.classList.add('rq-choice--checked');
-        // Re-evaluate if project type changed (to update steps)
-        if (radio.name === 'projectType') collectCurrentAnswers();
-      });
-    });
-  });
+  wireQuestionInteractions(item.qid);
 
-  // Wire checkbox highlight
-  $('rqStepCard').querySelectorAll('.rq-checks').forEach((group) => {
-    group.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
-      cb.addEventListener('change', () => {
-        cb.closest('.rq-check')?.classList.toggle('rq-check--checked', cb.checked);
-      });
+  // Focus the text field for typed questions
+  const input = $('rqStepCard').querySelector('.tf-input');
+  if (input) setTimeout(() => input.focus(), 60);
+}
+
+function wireQuestionInteractions(qid) {
+  const card = $('rqStepCard');
+  const ok = $('rqOkBtn');
+  if (ok) ok.addEventListener('click', goNext);
+
+  const wrap = card.querySelector('.tf-choices');
+  if (wrap) {
+    const multi = wrap.dataset.multi === 'true';
+    wrap.querySelectorAll('.tf-choice').forEach((btn) => {
+      btn.addEventListener('click', () => selectChoice(btn, multi));
     });
-  });
+  }
+}
+
+function selectChoice(btn, multi) {
+  const wrap = btn.closest('.tf-choices');
+  if (!wrap) return;
+  if (multi) {
+    btn.classList.toggle('tf-choice--selected');
+    collectCurrentAnswer();
+  } else {
+    wrap.querySelectorAll('.tf-choice').forEach((b) => b.classList.remove('tf-choice--selected'));
+    btn.classList.add('tf-choice--selected');
+    collectCurrentAnswer();
+    clearStepError();
+    // Auto-advance after a brief highlight (Typeform behaviour)
+    setTimeout(() => goNext(), 280);
+  }
 }
 
 /* ---------- Collect answers ---------- */
-function collectCurrentAnswers() {
-  const step = getActiveSteps()[currentStep];
-  if (!step) return;
-  step.questions.forEach((qid) => {
-    const q = Q[qid];
-    if (q.type === 'checkboxes') {
-      const inputs = $('rqStepCard').querySelectorAll(`input[name="${qid}"]:checked`);
-      answers[qid] = Array.from(inputs).map((i) => i.value);
-    } else if (q.type === 'radio') {
-      const input = $('rqStepCard').querySelector(`input[name="${qid}"]:checked`);
-      answers[qid] = input ? input.value : (answers[qid] || '');
-    } else {
-      const el = $(`rq_${qid}`);
-      if (el) answers[qid] = el.value.trim();
-    }
-  });
+function collectCurrentAnswer() {
+  const item = getActiveQuestions()[currentQuestionIndex];
+  if (!item) return;
+  const qid = item.qid;
+  const q = Q[qid];
+  if (q.type === 'checkboxes') {
+    const selected = $('rqStepCard').querySelectorAll(`.tf-choice--selected[data-qid="${qid}"]`);
+    answers[qid] = Array.from(selected).map((el) => el.dataset.value);
+  } else if (q.type === 'radio' || q.type === 'select') {
+    const sel = $('rqStepCard').querySelector(`.tf-choice--selected[data-qid="${qid}"]`);
+    answers[qid] = sel ? sel.dataset.value : (answers[qid] || '');
+  } else {
+    const el = $(`rq_${qid}`);
+    if (el) answers[qid] = el.value.trim();
+  }
 }
 
-function validateCurrentStep() {
-  const step = getActiveSteps()[currentStep];
-  for (const qid of step.questions) {
-    if (!Q[qid].required) continue;
-    const val = answers[qid];
-    if (!val || (Array.isArray(val) && !val.length)) {
-      const label = Q[qid].label;
-      showStepError(`"${label}" is required.`);
-      return false;
-    }
+function validateCurrentQuestion() {
+  const item = getActiveQuestions()[currentQuestionIndex];
+  if (!item) return true;
+  const q = Q[item.qid];
+  if (!q.required) return true;
+  const val = answers[item.qid];
+  if (!val || (Array.isArray(val) && !val.length)) {
+    showStepError('This field is required to continue.');
+    return false;
   }
   return true;
 }
@@ -460,8 +476,12 @@ function showStepError(msg) {
   if (!el) {
     el = document.createElement('div');
     el.id = 'rqStepError';
-    el.className = 'status status--error';
-    $('rqStepCard').prepend(el);
+    el.className = 'tf-error';
+  }
+  const field = $('rqStepCard').querySelector('.tf-q__field');
+  const actions = $('rqStepCard').querySelector('.tf-q__actions');
+  if (field && actions && el.parentNode !== field.parentNode) {
+    field.parentNode.insertBefore(el, actions);
   }
   el.textContent = msg;
   el.hidden = false;
@@ -474,13 +494,13 @@ function clearStepError() {
 
 /* ---------- Navigation ---------- */
 function goNext() {
-  collectCurrentAnswers();
-  if (!validateCurrentStep()) return;
+  collectCurrentAnswer();
+  if (!validateCurrentQuestion()) return;
   clearStepError();
-  const active = getActiveSteps();
-  if (currentStep < active.length - 1) {
-    currentStep++;
-    renderStep();
+  const active = getActiveQuestions();
+  if (currentQuestionIndex < active.length - 1) {
+    currentQuestionIndex++;
+    renderCurrentQuestion();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } else {
     showReview();
@@ -489,16 +509,16 @@ function goNext() {
 
 function goBack() {
   clearStepError();
-  if (currentStep > 0) {
-    currentStep--;
-    renderStep();
+  if (currentQuestionIndex > 0) {
+    currentQuestionIndex--;
+    renderCurrentQuestion();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
 /* ---------- Review screen ---------- */
 function showReview() {
-  collectCurrentAnswers();
+  collectCurrentAnswer();
   $('rqWizard').hidden = true;
   $('rqReview').hidden = false;
 
@@ -556,7 +576,7 @@ function renderAnswersSummary() {
 function showWizard() {
   $('rqReview').hidden = true;
   $('rqWizard').hidden = false;
-  renderStep();
+  renderCurrentQuestion();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -863,7 +883,7 @@ async function init() {
       url.searchParams.delete('submission');
       window.history.replaceState({}, '', url.toString());
     } else {
-      renderStep();
+      renderCurrentQuestion();
     }
     // Skip the rest of init's auth call since we already did it
     setupWiring();
@@ -876,10 +896,10 @@ async function init() {
       isShareMode = true;
       showReview();
     } else {
-      renderStep();
+      renderCurrentQuestion();
     }
   } else {
-    renderStep();
+    renderCurrentQuestion();
   }
 
   setupWiring();
@@ -926,10 +946,28 @@ function setupWiring() {
     }
   });
 
-  // Keyboard navigation
+  // Keyboard navigation (Typeform-style)
   document.addEventListener('keydown', (e) => {
     if ($('rqWizard').hidden) return;
-    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON') {
+    const tag = e.target.tagName;
+    const typing = tag === 'INPUT' || tag === 'TEXTAREA';
+
+    // Letter keys (A, B, C…) select a choice when not typing in a field
+    if (!typing && !e.metaKey && !e.ctrlKey && !e.altKey && /^[a-zA-Z]$/.test(e.key)) {
+      const wrap = $('rqStepCard').querySelector('.tf-choices');
+      if (wrap) {
+        const idx = e.key.toUpperCase().charCodeAt(0) - 65;
+        const btns = wrap.querySelectorAll('.tf-choice');
+        if (idx >= 0 && idx < btns.length) {
+          e.preventDefault();
+          selectChoice(btns[idx], wrap.dataset.multi === 'true');
+          return;
+        }
+      }
+    }
+
+    // Enter advances (but allow newlines inside a textarea)
+    if (e.key === 'Enter' && tag !== 'TEXTAREA') {
       e.preventDefault();
       goNext();
     }
