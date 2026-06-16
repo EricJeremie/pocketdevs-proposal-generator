@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PocketDevs — Requirements Questionnaire</title>
+  <link rel="icon" href="assets/logo.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=12" />
+  <link rel="stylesheet" href="requirements.css?v=1" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+  <header class="appbar no-print">
+    <div class="appbar__brand">
+      <img src="assets/logo.svg" alt="PocketDevs" class="appbar__logo" />
+      <span class="appbar__divider"></span>
+      <span class="appbar__title">Requirements Questionnaire</span>
+    </div>
+    <div class="appbar__actions">
+      <a href="index.html" class="btn btn--ghost">Proposal Generator</a>
+      <span id="rqAuthGreeting" class="appbar__greeting" hidden></span>
+      <button id="rqAuthBtn" class="btn btn--ghost">Login</button>
+      <div id="rqUserMenu" class="user-menu" hidden>
+        <button id="rqUserMenuBtn" class="user-menu__avatar" type="button" aria-haspopup="true" aria-expanded="false"></button>
+        <div id="rqUserMenuDropdown" class="user-menu__dropdown" hidden>
+          <button id="rqUserMenuLogout" class="user-menu__item" type="button">Log out</button>
+        </div>
+      </div>
+      <button id="rqDownloadBtn" class="btn btn--primary no-print" type="button" hidden>Download PDF</button>
+    </div>
+  </header>
+
+  <main class="rq-main">
+
+    <!-- ===== WIZARD ===== -->
+    <div id="rqWizard">
+      <div class="rq-hero no-print">
+        <h1 class="rq-hero__title">Tell us about your project</h1>
+        <p class="rq-hero__sub">Answer a few questions so we can build a detailed requirements document — no more back-and-forth.</p>
+      </div>
+
+      <div class="rq-progress-wrap no-print">
+        <div class="rq-progress">
+          <div id="rqProgressBar" class="rq-progress__bar" style="width:0%"></div>
+        </div>
+        <div id="rqStepLabel" class="rq-step-label"></div>
+      </div>
+
+      <div class="card rq-card" id="rqStepCard">
+        <div id="rqStepContent"></div>
+      </div>
+
+      <div class="rq-nav no-print">
+        <button id="rqBackBtn" class="btn btn--ghost" type="button">Back</button>
+        <button id="rqNextBtn" class="btn btn--primary" type="button">Next</button>
+      </div>
+    </div>
+
+    <!-- ===== REVIEW / SHARE ===== -->
+    <div id="rqReview" hidden>
+      <div class="rq-review-header no-print">
+        <h2 class="rq-review-header__title" id="rqReviewTitle">Your answers are ready</h2>
+        <p class="rq-review-header__sub" id="rqReviewSub">Share the link below with PocketDevs so we can generate your System Requirements Document.</p>
+      </div>
+
+      <!-- Client share panel (hidden for staff) -->
+      <div id="rqSharePanel" class="card rq-share-card no-print">
+        <div class="rq-share-row">
+          <input id="rqShareUrl" class="input rq-share-input" readonly placeholder="Your share link will appear here" />
+          <button id="rqCopyBtn" class="btn btn--primary" type="button">Copy link</button>
+        </div>
+        <div class="rq-share-hint">Send this link to <strong>pocketdevs.ph</strong> — our team will review your answers and generate the SRD.</div>
+      </div>
+
+      <!-- Staff generate panel -->
+      <div id="rqStaffPanel" class="card rq-staff-card no-print" hidden>
+        <div id="rqStatus" class="status" hidden></div>
+        <button id="rqGenerateBtn" class="btn btn--primary btn--block" type="button">Generate System Requirements Document</button>
+        <p class="rq-staff-hint">Requires a PocketDevs account. You can edit any answers below before generating.</p>
+      </div>
+
+      <!-- Answers summary (editable) -->
+      <div id="rqAnswersSummary"></div>
+
+      <div class="rq-review-actions no-print">
+        <button id="rqEditBtn" class="btn btn--ghost" type="button">Edit answers</button>
+      </div>
+    </div>
+
+    <!-- ===== SRD OUTPUT ===== -->
+    <div id="rqSRDSection" hidden>
+      <div id="rqSRDToolbar" class="rq-srd-toolbar no-print">
+        <span class="rq-srd-toolbar__label">System Requirements Document generated</span>
+        <div id="rqEditorToolbar" class="editor-toolbar" hidden>
+          <button type="button" data-cmd="bold" class="toolbar-btn" title="Bold"><b>B</b></button>
+          <button type="button" data-cmd="italic" class="toolbar-btn" title="Italic"><i>I</i></button>
+          <button type="button" data-cmd="underline" class="toolbar-btn" title="Underline"><u>U</u></button>
+          <span class="toolbar-sep"></span>
+          <button type="button" data-cmd="insertUnorderedList" class="toolbar-btn" title="Bullet list">&#8226;&#8226;</button>
+          <button type="button" data-cmd="insertOrderedList" class="toolbar-btn" title="Numbered list">1.</button>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="paper-wrap">
+          <article id="rqSRD" class="proposal"></article>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Auth Modal -->
+  <div id="authModal" class="modal no-print">
+    <div class="modal__content card">
+      <button id="closeAuth" class="modal__close">&times;</button>
+      <h2 class="card__title" id="authTitle">Sign in to PocketDevs</h2>
+      <div id="authTabs" class="auth-tabs">
+        <button id="authTabLogin" class="auth-tab auth-tab--active" type="button">Login</button>
+        <button id="authTabSignup" class="auth-tab" type="button">Sign up</button>
+      </div>
+      <form id="authForm" novalidate>
+        <div class="field"><label class="label">Email</label><input id="authEmail" class="input" type="email" autocomplete="email" required /></div>
+        <div class="field"><label class="label">Password</label><input id="authPassword" class="input" type="password" autocomplete="current-password" required /></div>
+        <div id="authNameRow" class="field" hidden><label class="label">Full name</label><input id="authName" class="input" type="text" /></div>
+        <button class="btn btn--primary btn--block" type="submit" id="authSubmit">Sign in</button>
+        <div id="authError" class="status" hidden></div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="requirements.js?v=1"></script>
+</body>
+</html>
