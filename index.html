@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=14" />
+  <link rel="stylesheet" href="styles.css?v=16" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
@@ -20,11 +20,11 @@
       <span class="appbar__title">Proposal Generator</span>
     </div>
     <div class="appbar__actions">
-      <a href="dashboard.html" class="btn btn--ghost">My Documents</a>
-      <a href="requirements.html" class="btn btn--ghost">Requirements</a>
+      <a href="dashboard.html" class="btn btn--ghost nav-link">My Documents</a>
+      <a href="requirements.html" class="btn btn--ghost nav-link">Requirements</a>
       <span id="authGreeting" class="appbar__greeting" hidden></span>
-      <button id="authNavBtn" class="btn btn--ghost">Login</button>
-      <button id="settingsBtn" class="btn btn--ghost" type="button">Settings</button>
+      <button id="authNavBtn" class="btn btn--ghost nav-link">Login</button>
+      <button id="settingsBtn" class="btn btn--ghost nav-link" type="button">Settings</button>
       <div id="userMenu" class="user-menu" hidden>
         <button id="userMenuBtn" class="user-menu__avatar" type="button" aria-haspopup="true" aria-expanded="false"></button>
         <div id="userMenuDropdown" class="user-menu__dropdown" hidden>
@@ -34,6 +34,11 @@
         </div>
       </div>
       <button id="downloadBtn" class="btn btn--primary" type="button" disabled>Download PDF</button>
+      <button id="hamburgerBtn" class="appbar__hamburger" type="button" aria-label="Open navigation menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
     </div>
   </header>
 
@@ -333,6 +338,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=14"></script>
+  <script type="module" src="app.js?v=15"></script>
 </body>
 </html>

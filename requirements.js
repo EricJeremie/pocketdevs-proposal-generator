@@ -1,4 +1,5 @@
 import { SUPABASE_URL, SUPABASE_ANON_KEY, getSession, signIn, signUp, signOut, onAuthChange, saveQuestionnaire, fetchSubmissionById } from './supabase.js';
+import { initNav } from './nav.js';
 
 const REQ_API_URL = `${SUPABASE_URL}/functions/v1/generate-requirements`;
 
@@ -910,6 +911,7 @@ async function init() {
 }
 
 function setupWiring() {
+  initNav({ activePage: 'requirements' });
   $('rqNextBtn').addEventListener('click', goNext);
   $('rqBackBtn').addEventListener('click', goBack);
   $('rqEditBtn').addEventListener('click', showWizard);

@@ -1,5 +1,6 @@
 'use strict';
 
+import { initNav } from './nav.js';
 import {
   getSession, signIn, signUp, signOut, onAuthChange,
   fetchUserProposals, fetchUserQuestionnaires,
@@ -216,6 +217,8 @@ async function handleAuth(e) {
 }
 
 function init() {
+  initNav({ activePage: 'dashboard' });
+
   // If no session token in storage, skip loading state and show login prompt immediately.
   // If there is one, keep showing "Loading…" until Supabase confirms or times out.
   try {

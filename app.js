@@ -6,6 +6,7 @@
 'use strict';
 
 import { getSession, signIn, signUp, signOut, saveProposal, fetchUserProposals, deleteProposal, fetchProposalById, fetchUserQuestionnaires, deleteQuestionnaire, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
+import { initNav } from './nav.js';
 
 /* ---------- Constants ---------- */
 const MODEL = 'gemini-2.5-flash';
@@ -1211,6 +1212,20 @@ function init() {
     autofillInvoiceMeta();
     addLineItemRow();
     updateAuthState();
+
+    // Handle ?mode=invoice URL param (from sidebar Invoice link)
+    const modeParam = new URLSearchParams(window.location.search).get('mode');
+    if (modeParam === 'invoice') setMode('invoice');
+    else if (modeParam === 'proposal') setMode('proposal');
+
+    const activeMode = modeParam === 'invoice' ? 'invoice' : 'proposal';
+    initNav({
+      activePage: activeMode,
+      onSettings: () => {
+        const panel = $('settingsPanel');
+        panel.hidden = !panel.hidden;
+      },
+    });
 
     $('settingsBtn').addEventListener('click', () => { $('settingsPanel').hidden = !$('settingsPanel').hidden; });
     $('logoUploadBtn').addEventListener('click', () => $('logoInput').click());

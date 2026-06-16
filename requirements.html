@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=15" />
+  <link rel="stylesheet" href="styles.css?v=16" />
   <link rel="stylesheet" href="requirements.css?v=2" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -21,10 +21,10 @@
       <span class="appbar__title">Requirements Questionnaire</span>
     </div>
     <div class="appbar__actions">
-      <a href="index.html" class="btn btn--ghost">Proposal Generator</a>
-      <a href="dashboard.html" class="btn btn--ghost">My Documents</a>
+      <a href="index.html" class="btn btn--ghost nav-link">Proposal Generator</a>
+      <a href="dashboard.html" class="btn btn--ghost nav-link">My Documents</a>
       <span id="rqAuthGreeting" class="appbar__greeting" hidden></span>
-      <button id="rqAuthBtn" class="btn btn--ghost">Login</button>
+      <button id="rqAuthBtn" class="btn btn--ghost nav-link">Login</button>
       <div id="rqUserMenu" class="user-menu" hidden>
         <button id="rqUserMenuBtn" class="user-menu__avatar" type="button" aria-haspopup="true" aria-expanded="false"></button>
         <div id="rqUserMenuDropdown" class="user-menu__dropdown" hidden>
@@ -32,6 +32,11 @@
         </div>
       </div>
       <button id="rqDownloadBtn" class="btn btn--primary no-print" type="button" hidden>Download PDF</button>
+      <button id="hamburgerBtn" class="appbar__hamburger" type="button" aria-label="Open navigation menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
     </div>
   </header>
 
@@ -128,6 +133,6 @@
     </div>
   </div>
 
-  <script type="module" src="requirements.js?v=6"></script>
+  <script type="module" src="requirements.js?v=7"></script>
 </body>
 </html>
