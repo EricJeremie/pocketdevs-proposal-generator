@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=26" />
+  <link rel="stylesheet" href="styles.css?v=27" />
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script defer src="preloader.js?v=1"></script>
 </head>
@@ -270,6 +270,25 @@
         <button type="button" class="editor-toolbar__btn" data-cmd="insertUnorderedList" title="Bullet list">&#8226;&#8801;</button>
         <button type="button" class="editor-toolbar__btn" data-cmd="insertOrderedList" title="Numbered list">1.&#8801;</button>
         <span class="editor-toolbar__sep"></span>
+        <div class="editor-toolbar__menu">
+          <button type="button" class="editor-toolbar__btn" id="tableMenuBtn" title="Table" aria-haspopup="true" aria-expanded="false">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+            <span class="editor-toolbar__caret">&#9662;</span>
+          </button>
+          <div class="editor-toolbar__dropdown" id="tableMenu" hidden role="menu">
+            <button type="button" data-table="insert" role="menuitem">Insert table</button>
+            <div class="editor-toolbar__dropdown-sep"></div>
+            <button type="button" data-table="row-above" role="menuitem">Insert row above</button>
+            <button type="button" data-table="row-below" role="menuitem">Insert row below</button>
+            <button type="button" data-table="col-left" role="menuitem">Insert column left</button>
+            <button type="button" data-table="col-right" role="menuitem">Insert column right</button>
+            <div class="editor-toolbar__dropdown-sep"></div>
+            <button type="button" data-table="del-row" role="menuitem">Delete row</button>
+            <button type="button" data-table="del-col" role="menuitem">Delete column</button>
+            <button type="button" data-table="del-table" role="menuitem">Delete table</button>
+          </div>
+        </div>
+        <span class="editor-toolbar__sep"></span>
         <button type="button" class="editor-toolbar__btn" data-cmd="removeFormat" title="Clear formatting">T&times;</button>
       </div>
       <div class="paper-wrap">
@@ -434,6 +453,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=22"></script>
+  <script type="module" src="app.js?v=23"></script>
 </body>
 </html>

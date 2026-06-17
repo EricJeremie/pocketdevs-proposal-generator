@@ -727,6 +727,184 @@ async function generateInvoice() {
     });
   });
 
+  /* ---- Table editing ---- */
+  function selectionNode() {
+    let node = savedRange ? savedRange.startContainer : window.getSelection().anchorNode;
+    if (node && node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+    return node && editor.contains(node) ? node : null;
+  }
+  function currentCell() {
+    const node = selectionNode();
+    return node ? node.closest('td, th') : null;
+  }
+  function currentTable() {
+    const node = selectionNode();
+    return node ? node.closest('table') : null;
+  }
+  function tableColCount(table) {
+    let max = 0;
+    for (const row of table.rows) max = Math.max(max, row.cells.length);
+    return max || 1;
+  }
+  function placeCaret(node) {
+    if (!node) return;
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    savedRange = range.cloneRange();
+  }
+  function afterTableChange() {
+    saveSelection();
+    editor.dispatchEvent(new InputEvent('input', { bubbles: true }));
+  }
+
+  function buildTable(rows, cols) {
+    const table = document.createElement('table');
+    table.className = 'p-table';
+    const thead = document.createElement('thead');
+    const htr = document.createElement('tr');
+    for (let c = 0; c < cols; c++) {
+      const th = document.createElement('th');
+      th.textContent = `Heading ${c + 1}`;
+      htr.appendChild(th);
+    }
+    thead.appendChild(htr);
+    const tbody = document.createElement('tbody');
+    for (let r = 0; r < rows; r++) {
+      const tr = document.createElement('tr');
+      for (let c = 0; c < cols; c++) {
+        const td = document.createElement('td');
+        td.innerHTML = '<br>';
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    return table;
+  }
+
+  function insertTable() {
+    const table = buildTable(3, 3);
+    const existing = currentTable();
+    const node = selectionNode();
+    const section = node ? node.closest('.p-section, .p-cover, .p-sign') : null;
+    if (existing && existing.parentElement) existing.after(table);   // after the current table
+    else if (section) section.appendChild(table);                    // at end of current section
+    else editor.appendChild(table);                                  // fallback
+    placeCaret(table.querySelector('th, td'));
+    afterTableChange();
+    showToast('Table inserted — click a cell to edit.');
+  }
+  function addRow(below) {
+    const table = currentTable();
+    if (!table) return;
+    const tbody = table.tBodies[0] || table;
+    const cell = currentCell();
+    let refRow = cell ? cell.closest('tr') : null;
+    if (refRow && refRow.parentElement.tagName === 'THEAD') refRow = tbody.rows[0] || null;
+    const tr = document.createElement('tr');
+    for (let c = 0; c < tableColCount(table); c++) {
+      const td = document.createElement('td');
+      td.innerHTML = '<br>';
+      tr.appendChild(td);
+    }
+    if (refRow && refRow.parentElement === tbody) (below ? refRow.after(tr) : refRow.before(tr));
+    else tbody.appendChild(tr);
+    placeCaret(tr.cells[0]);
+    afterTableChange();
+  }
+  function addColumn(right) {
+    const table = currentTable();
+    const cell = currentCell();
+    if (!table) return;
+    const idx = cell ? cell.cellIndex : (right ? tableColCount(table) - 1 : 0);
+    const insertAt = right ? idx + 1 : idx;
+    for (const row of table.rows) {
+      const isHead = row.parentElement.tagName === 'THEAD';
+      const el = document.createElement(isHead ? 'th' : 'td');
+      if (isHead) el.textContent = 'Heading'; else el.innerHTML = '<br>';
+      const ref = row.cells[insertAt] || null;
+      if (ref) row.insertBefore(el, ref); else row.appendChild(el);
+    }
+    afterTableChange();
+  }
+  function deleteRow() {
+    const cell = currentCell();
+    const table = currentTable();
+    if (!cell || !table) return;
+    if (table.rows.length <= 1) { deleteTable(); return; }
+    cell.closest('tr').remove();
+    afterTableChange();
+  }
+  function deleteColumn() {
+    const table = currentTable();
+    const cell = currentCell();
+    if (!table || !cell) return;
+    if (tableColCount(table) <= 1) { deleteTable(); return; }
+    const idx = cell.cellIndex;
+    for (const row of Array.from(table.rows)) {
+      if (row.cells[idx]) row.deleteCell(idx);
+    }
+    afterTableChange();
+  }
+  function deleteTable() {
+    const table = currentTable();
+    if (!table) return;
+    table.remove();
+    afterTableChange();
+  }
+
+  const tableMenuBtn = $('tableMenuBtn');
+  const tableMenu = $('tableMenu');
+  function closeTableMenu() {
+    if (!tableMenu) return;
+    tableMenu.hidden = true;
+    tableMenuBtn.setAttribute('aria-expanded', 'false');
+  }
+  function refreshTableMenuState() {
+    const inTable = !!currentTable();
+    tableMenu.querySelectorAll('button[data-table]').forEach((b) => {
+      b.disabled = b.dataset.table !== 'insert' && !inTable;
+    });
+  }
+  if (tableMenuBtn && tableMenu) {
+    tableMenuBtn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      saveSelection();
+      if (tableMenu.hidden) { refreshTableMenuState(); tableMenu.hidden = false; tableMenuBtn.setAttribute('aria-expanded', 'true'); }
+      else closeTableMenu();
+    });
+    const TABLE_ACTIONS = {
+      'insert': insertTable,
+      'row-above': () => addRow(false),
+      'row-below': () => addRow(true),
+      'col-left': () => addColumn(false),
+      'col-right': () => addColumn(true),
+      'del-row': deleteRow,
+      'del-col': deleteColumn,
+      'del-table': deleteTable,
+    };
+    tableMenu.querySelectorAll('button[data-table]').forEach((b) => {
+      b.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        if (b.disabled) return;
+        editor.focus();
+        restoreSelection();
+        const fn = TABLE_ACTIONS[b.dataset.table];
+        if (fn) fn();
+        closeTableMenu();
+      });
+    });
+    document.addEventListener('mousedown', (e) => {
+      if (tableMenu.hidden) return;
+      if (!tableMenu.contains(e.target) && !tableMenuBtn.contains(e.target)) closeTableMenu();
+    });
+  }
+
   /* ---- Reflect the formatting under the cursor/selection in the toolbar ---- */
   const VALID_BLOCKS = ['P', 'H1', 'H2', 'H3', 'H4', 'BLOCKQUOTE'];
   const TOGGLE_CMDS = ['bold', 'italic', 'underline', 'strikeThrough', 'justifyLeft', 'justifyCenter', 'justifyRight', 'insertUnorderedList', 'insertOrderedList'];

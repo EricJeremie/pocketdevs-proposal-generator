@@ -353,6 +353,26 @@ button, input, textarea, select { font-family: inherit; }
 .editor-toolbar__btn:hover { background: var(--bg-subtle); }
 .editor-toolbar__btn.is-active { background: var(--rausch-tint); color: var(--rausch); }
 .editor-toolbar__sep { width: 1px; height: 20px; background: var(--border); margin: 0 0.25rem; }
+
+/* Table menu (dropdown) */
+.editor-toolbar__menu { position: relative; display: inline-flex; }
+#tableMenuBtn { width: auto; gap: 0.15rem; padding: 0 0.4rem; }
+.editor-toolbar__caret { font-size: 0.6rem; line-height: 1; }
+.editor-toolbar__dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 60;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14); padding: 0.35rem; min-width: 184px;
+  display: flex; flex-direction: column; gap: 1px;
+}
+.editor-toolbar__dropdown[hidden] { display: none; }
+.editor-toolbar__dropdown button {
+  text-align: left; background: none; border: none; border-radius: 6px;
+  padding: 0.5rem 0.65rem; font-size: 0.8125rem; color: var(--text);
+  cursor: pointer; white-space: nowrap; width: 100%;
+}
+.editor-toolbar__dropdown button:hover:not(:disabled) { background: var(--bg-subtle); }
+.editor-toolbar__dropdown button:disabled { color: var(--text-muted); opacity: 0.45; cursor: default; }
+.editor-toolbar__dropdown-sep { height: 1px; background: var(--border); margin: 0.25rem 0; }
 .editor-toolbar__select {
   height: 32px; border-radius: 6px; border: 1px solid var(--border);
   background: var(--bg-card); color: var(--text); font-size: 0.8125rem;
