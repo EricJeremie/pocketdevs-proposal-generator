@@ -335,6 +335,20 @@ body.client-intake .appbar__actions { display: none; }
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text);
+  flex-shrink: 0;
+}
+/* The editor toolbar lives inside the sticky label bar here, so strip its
+   standalone-card styling (border/shadow/sticky/max-width) and let it sit as a
+   plain control row beside the label. */
+.rq-srd-toolbar .editor-toolbar {
+  position: static;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  justify-content: flex-end;
 }
 
 /* SRD-specific extra styles */

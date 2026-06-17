@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css?v=23" />
-  <link rel="stylesheet" href="requirements.css?v=5" />
+  <link rel="stylesheet" href="requirements.css?v=6" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
@@ -99,12 +99,52 @@
       <div id="rqSRDToolbar" class="rq-srd-toolbar no-print">
         <span class="rq-srd-toolbar__label">System Requirements Document generated</span>
         <div id="rqEditorToolbar" class="editor-toolbar" hidden>
-          <button type="button" data-cmd="bold" class="toolbar-btn" title="Bold"><b>B</b></button>
-          <button type="button" data-cmd="italic" class="toolbar-btn" title="Italic"><i>I</i></button>
-          <button type="button" data-cmd="underline" class="toolbar-btn" title="Underline"><u>U</u></button>
-          <span class="toolbar-sep"></span>
-          <button type="button" data-cmd="insertUnorderedList" class="toolbar-btn" title="Bullet list">&#8226;&#8226;</button>
-          <button type="button" data-cmd="insertOrderedList" class="toolbar-btn" title="Numbered list">1.</button>
+          <select class="editor-toolbar__select" data-cmd="formatBlock" title="Heading">
+            <option value="P">Paragraph</option>
+            <option value="H1">Heading 1</option>
+            <option value="H2">Heading 2</option>
+            <option value="H3">Heading 3</option>
+            <option value="H4">Heading 4</option>
+            <option value="BLOCKQUOTE">Quote</option>
+          </select>
+          <select class="editor-toolbar__select editor-toolbar__select--font" data-cmd="fontName" title="Font family">
+            <option value="Inter">Inter</option>
+            <option value="Arial">Arial</option>
+            <option value="Georgia">Georgia</option>
+            <option value="'Times New Roman'">Times New Roman</option>
+            <option value="'Courier New'">Courier New</option>
+            <option value="Verdana">Verdana</option>
+          </select>
+          <select class="editor-toolbar__select" data-cmd="fontSize" title="Font size">
+            <option value="1">8pt</option>
+            <option value="2">10pt</option>
+            <option value="3" selected>12pt</option>
+            <option value="4">14pt</option>
+            <option value="5">18pt</option>
+            <option value="6">24pt</option>
+            <option value="7">36pt</option>
+          </select>
+          <span class="editor-toolbar__sep"></span>
+          <button type="button" class="editor-toolbar__btn" data-cmd="bold" title="Bold"><b>B</b></button>
+          <button type="button" class="editor-toolbar__btn" data-cmd="italic" title="Italic"><i>I</i></button>
+          <button type="button" class="editor-toolbar__btn" data-cmd="underline" title="Underline"><u>U</u></button>
+          <button type="button" class="editor-toolbar__btn" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
+          <span class="editor-toolbar__sep"></span>
+          <label class="editor-toolbar__color" title="Text color">
+            A<input type="color" data-cmd="foreColor" value="#14161a" />
+          </label>
+          <label class="editor-toolbar__color" title="Highlight color">
+            <span class="editor-toolbar__hl">H</span><input type="color" data-cmd="hiliteColor" value="#fff59d" />
+          </label>
+          <span class="editor-toolbar__sep"></span>
+          <button type="button" class="editor-toolbar__btn" data-cmd="justifyLeft" title="Align left">&#8676;</button>
+          <button type="button" class="editor-toolbar__btn" data-cmd="justifyCenter" title="Align center">&#8596;</button>
+          <button type="button" class="editor-toolbar__btn" data-cmd="justifyRight" title="Align right">&#8677;</button>
+          <span class="editor-toolbar__sep"></span>
+          <button type="button" class="editor-toolbar__btn" data-cmd="insertUnorderedList" title="Bullet list">&#8226;&#8801;</button>
+          <button type="button" class="editor-toolbar__btn" data-cmd="insertOrderedList" title="Numbered list">1.&#8801;</button>
+          <span class="editor-toolbar__sep"></span>
+          <button type="button" class="editor-toolbar__btn" data-cmd="removeFormat" title="Clear formatting">T&times;</button>
         </div>
       </div>
       <div class="stage">
@@ -149,6 +189,6 @@
     </div>
   </div>
 
-  <script type="module" src="requirements.js?v=16"></script>
+  <script type="module" src="requirements.js?v=17"></script>
 </body>
 </html>

@@ -991,18 +991,126 @@ function downloadPDF() {
     .catch(() => window.scrollTo(0, restoreY));
 }
 
-/* ---------- Rich text toolbar ---------- */
-(function initToolbar() {
-  document.addEventListener('DOMContentLoaded', () => {
-    const toolbar = $('rqEditorToolbar');
-    if (!toolbar) return;
-    toolbar.querySelectorAll('[data-cmd]').forEach((btn) => {
-      btn.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        document.execCommand(btn.dataset.cmd, false, null);
-      });
+/* ---------- Rich text editor toolbar ---------- */
+(() => {
+  const editor = $('rqSRD');
+  const toolbar = $('rqEditorToolbar');
+  if (!editor || !toolbar) return;
+  let savedRange = null;
+
+  function saveSelection() {
+    const sel = window.getSelection();
+    if (sel.rangeCount && editor.contains(sel.anchorNode)) {
+      savedRange = sel.getRangeAt(0).cloneRange();
+    }
+  }
+  function restoreSelection() {
+    if (!savedRange) return;
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedRange);
+  }
+  editor.addEventListener('mouseup', saveSelection);
+  editor.addEventListener('keyup', saveSelection);
+
+  try { document.execCommand('styleWithCSS', false, true); } catch (e) { /* ignore */ }
+
+  toolbar.querySelectorAll('button[data-cmd]').forEach((btn) => {
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault(); // keep the current text selection focused
+      editor.focus();
+      restoreSelection();
+      document.execCommand(btn.dataset.cmd, false, null);
+      saveSelection();
+      updateToolbarState();
     });
   });
+
+  toolbar.querySelectorAll('select[data-cmd]').forEach((sel) => {
+    sel.addEventListener('mousedown', saveSelection);
+    sel.addEventListener('change', () => {
+      editor.focus();
+      restoreSelection();
+      document.execCommand(sel.dataset.cmd, false, sel.value);
+      saveSelection();
+      updateToolbarState();
+    });
+  });
+
+  toolbar.querySelectorAll('input[type="color"][data-cmd]').forEach((inp) => {
+    inp.addEventListener('mousedown', saveSelection);
+    inp.addEventListener('input', () => {
+      editor.focus();
+      restoreSelection();
+      document.execCommand(inp.dataset.cmd, false, inp.value);
+      saveSelection();
+      updateToolbarState();
+    });
+  });
+
+  /* ---- Reflect the formatting under the cursor/selection in the toolbar ---- */
+  const VALID_BLOCKS = ['P', 'H1', 'H2', 'H3', 'H4', 'BLOCKQUOTE'];
+  const TOGGLE_CMDS = ['bold', 'italic', 'underline', 'strikeThrough', 'justifyLeft', 'justifyCenter', 'justifyRight', 'insertUnorderedList', 'insertOrderedList'];
+
+  function rgbToHex(rgb) {
+    const m = String(rgb || '').match(/\d+/g);
+    if (!m || m.length < 3) return null;
+    return '#' + m.slice(0, 3).map((n) => Math.max(0, Math.min(255, parseInt(n, 10))).toString(16).padStart(2, '0')).join('');
+  }
+
+  function updateToolbarState() {
+    const sel = window.getSelection();
+    if (!sel.rangeCount || !editor.contains(sel.anchorNode)) return;
+
+    // Heading / block format
+    const blockSelect = toolbar.querySelector('select[data-cmd="formatBlock"]');
+    let blockTag = '';
+    try { blockTag = document.queryCommandValue('formatBlock').toUpperCase(); } catch (e) { /* ignore */ }
+    blockSelect.value = VALID_BLOCKS.includes(blockTag) ? blockTag : 'P';
+
+    // Font family
+    const fontSelect = toolbar.querySelector('select[data-cmd="fontName"]');
+    let fontName = '';
+    try { fontName = document.queryCommandValue('fontName').replace(/['"]/g, ''); } catch (e) { /* ignore */ }
+    const match = Array.from(fontSelect.options).find((o) => o.value.replace(/['"]/g, '').toLowerCase() === fontName.toLowerCase());
+    if (match) fontSelect.value = match.value;
+
+    // Font size (legacy 1-7 scale)
+    const sizeSelect = toolbar.querySelector('select[data-cmd="fontSize"]');
+    let fontSize = '';
+    try { fontSize = document.queryCommandValue('fontSize'); } catch (e) { /* ignore */ }
+    if (['1', '2', '3', '4', '5', '6', '7'].includes(fontSize)) sizeSelect.value = fontSize;
+
+    // Toggle buttons: bold, italic, underline, strikethrough, alignment, lists
+    TOGGLE_CMDS.forEach((cmd) => {
+      const btn = toolbar.querySelector(`button[data-cmd="${cmd}"]`);
+      let active = false;
+      try { active = document.queryCommandState(cmd); } catch (e) { /* ignore */ }
+      if (btn) btn.classList.toggle('is-active', active);
+    });
+
+    // Text color
+    let foreColor = '';
+    try { foreColor = document.queryCommandValue('foreColor'); } catch (e) { /* ignore */ }
+    const foreHex = rgbToHex(foreColor);
+    if (foreHex) toolbar.querySelector('input[data-cmd="foreColor"]').value = foreHex;
+
+    // Highlight color: walk up from the cursor to find a non-transparent background
+    let node = sel.anchorNode;
+    if (node && node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+    let bg = '';
+    while (node && node !== editor.parentElement) {
+      const bgColor = getComputedStyle(node).backgroundColor;
+      if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') { bg = bgColor; break; }
+      node = node.parentElement;
+    }
+    const hlHex = rgbToHex(bg);
+    if (hlHex) toolbar.querySelector('input[data-cmd="hiliteColor"]').value = hlHex;
+  }
+
+  editor.addEventListener('mouseup', updateToolbarState);
+  editor.addEventListener('keyup', updateToolbarState);
+  editor.addEventListener('focus', updateToolbarState);
 })();
 
 /* ---------- Init ---------- */
