@@ -224,8 +224,24 @@
   background: var(--bg-subtle);
 }
 
-/* Client intake mode (filling via an invite link) — hide owner-only chrome */
+/* Client intake mode (filling via an invite link). No sidebar is injected in
+   this mode, so reclaim the 240px the sidebar would occupy (otherwise the whole
+   questionnaire is pushed right with a dead gap on the left), hide owner-only
+   chrome, and surface the brand logo in the top bar — it normally lives in the
+   sidebar, which clients never see. */
+.appbar__brand-logo { display: none; }            /* staff mode: sidebar shows the logo */
+body.client-intake .appbar { left: 0; }
+body.client-intake .app-body { margin-left: 0; }
 body.client-intake .appbar__actions { display: none; }
+body.client-intake .appbar__brand-logo { display: block; }
+/* On mobile the staff layout hides the appbar in favour of an injected mobile
+   bar — but that bar is never injected in client mode, which left a dead gap at
+   the top. Keep the appbar as the fixed header instead and drop the redundant
+   mobile-bar spacing (body already pads for the fixed appbar). */
+@media (max-width: 768px) {
+  body.client-intake .appbar { display: flex; }
+  body.client-intake .app-body { padding-top: 0; }
+}
 
 /* Client thank-you screen */
 .rq-thankyou {
