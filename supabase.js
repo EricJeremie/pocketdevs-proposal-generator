@@ -400,7 +400,7 @@ export async function createDocChannel(token, me, handlers = {}) {
     await new Promise((resolve) => {
       channel.subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          channel.track({ id: me.id, name: me.name, role: me.role });
+          channel.track({ id: me.id, name: me.name, role: me.role, color: me.color });
           resolve();
         }
       });
@@ -410,8 +410,12 @@ export async function createDocChannel(token, me, handlers = {}) {
       broadcast(html) {
         channel.send({ type: 'broadcast', event: 'edit', payload: { html, from: me.id } });
       },
-      leave() {
-        try { channel.untrack(); sb.removeChannel(channel); } catch { /* ignore */ }
+      async leave() {
+        // Flush the presence "leave" before tearing down the socket, so other
+        // clients see the avatar disappear immediately rather than after a
+        // server-side reap timeout.
+        try { await channel.untrack(); } catch { /* ignore */ }
+        try { sb.removeChannel(channel); } catch { /* ignore */ }
       },
     };
   } catch (err) {

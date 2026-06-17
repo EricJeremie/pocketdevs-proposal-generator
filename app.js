@@ -980,15 +980,40 @@ const collab = {
   lastEditAt: 0,
   pendingRemoteHtml: null,
   me: null,
+  participants: [],
 };
 const COLLAB_BROADCAST_MS = 250;
 const COLLAB_PERSIST_MS = 1500;
 const COLLAB_IDLE_MS = 1200; // don't overwrite the doc while the user is typing
 
-function collabMe() {
+// Friendly identities for the presence avatars (Google-Docs style).
+const COLLAB_ANIMALS = ['Lion', 'Tiger', 'Otter', 'Panda', 'Koala', 'Falcon', 'Dolphin', 'Fox', 'Owl', 'Whale', 'Bison', 'Heron', 'Lynx', 'Crane'];
+const COLLAB_COLORS = ['#f2384a', '#0ea5e9', '#16a34a', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#6366f1', '#ef4444', '#0891b2'];
+function colorFor(id) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return COLLAB_COLORS[h % COLLAB_COLORS.length];
+}
+function initialsFor(name) {
+  return (name || '?').trim().split(/\s+/).map((w) => w[0] || '').join('').slice(0, 2).toUpperCase() || '?';
+}
+
+// Build this client's identity once: real name for the owner, a stable
+// "Anonymous Animal" for link guests, each with a consistent colour.
+async function ensureIdentity() {
   if (collab.me) return collab.me;
   const id = (crypto.randomUUID && crypto.randomUUID()) || String(Math.random()).slice(2);
-  collab.me = { id, name: collab.isGuest ? 'Collaborator' : 'Owner', role: collab.isGuest ? 'guest' : 'owner' };
+  let name, role;
+  if (collab.isGuest) {
+    role = 'guest';
+    name = 'Anonymous ' + COLLAB_ANIMALS[Math.floor(Math.random() * COLLAB_ANIMALS.length)];
+  } else {
+    role = 'owner';
+    const session = await getSession();
+    const meta = (session && session.user && session.user.user_metadata) || {};
+    name = meta.full_name || (session && session.user && session.user.email) || 'You';
+  }
+  collab.me = { id, name, role, color: colorFor(id) };
   return collab.me;
 }
 
@@ -1111,20 +1136,49 @@ function restoreCaretOffset(root, offset) {
 async function joinCollab() {
   if (!collab.token || collab.channel) return;
   attachEditListener();
-  collab.channel = await createDocChannel(collab.token, collabMe(), {
+  const me = await ensureIdentity();
+  collab.channel = await createDocChannel(collab.token, me, {
     onEdit: (html) => applyRemoteHtml(html),
     onPresence: (people) => updatePresence(people),
   });
 }
 function leaveCollab() {
   if (collab.channel) { collab.channel.leave(); collab.channel = null; }
+  collab.participants = [];
+  renderAvatars($('collabAvatars'), []);
 }
+
+// Presence → de-duplicated participant list → avatar stacks + count text.
 function updatePresence(people) {
-  const n = (people || []).length || 1;
+  const seen = new Set();
+  collab.participants = (people || []).filter((p) => {
+    if (!p || !p.id || seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  });
+  renderAvatars($('collabAvatars'), collab.participants);
+  renderAvatars($('shareAvatars'), collab.participants);
+  const n = collab.participants.length || 1;
   const a = $('collabPresence');
   if (a) a.textContent = n <= 1 ? 'Just you so far' : `${n} people here now`;
   const b = $('collabBannerPresence');
-  if (b) b.textContent = n <= 1 ? '' : `${n} people editing`;
+  if (b) b.textContent = n <= 1 ? '' : `${n} editing`;
+}
+
+// Render an overlapping stack of avatar circles (Google-Docs style).
+function renderAvatars(el, people) {
+  if (!el) return;
+  if (!people || !people.length) { el.innerHTML = ''; el.hidden = true; return; }
+  el.hidden = false;
+  const MAX = 4;
+  const shown = people.slice(0, MAX);
+  const extra = people.length - shown.length;
+  const myId = collab.me && collab.me.id;
+  el.innerHTML = shown.map((p) => {
+    const you = p.id === myId;
+    const title = esc(p.name || 'Guest') + (you ? ' (you)' : '');
+    return `<span class="collab-avatar${you ? ' collab-avatar--you' : ''}" style="background:${esc(p.color || '#888')}" title="${title}">${esc(initialsFor(p.name))}</span>`;
+  }).join('') + (extra > 0 ? `<span class="collab-avatar collab-avatar--more" title="${extra} more">+${extra}</span>` : '');
 }
 
 /* ----- Owner: share button + modal ----- */
@@ -1147,7 +1201,10 @@ async function handleShareClick() {
 }
 function openShareModal() {
   $('shareLinkInput').value = shareUrl(collab.token);
-  updatePresence(collab.channel ? null : [collabMe()]);
+  const people = (collab.participants && collab.participants.length)
+    ? collab.participants
+    : (collab.me ? [collab.me] : []);
+  renderAvatars($('shareAvatars'), people);
   $('shareModal').classList.add('modal--visible');
   $('shareLinkInput').select();
 }

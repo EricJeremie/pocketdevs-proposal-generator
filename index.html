@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=25" />
+  <link rel="stylesheet" href="styles.css?v=26" />
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script defer src="preloader.js?v=1"></script>
 </head>
@@ -28,6 +28,7 @@
       <span class="appbar__title">Proposal Generator</span>
     </div>
     <div class="appbar__actions">
+      <div id="collabAvatars" class="collab-avatars" hidden aria-label="People editing"></div>
       <button id="authNavBtn" class="btn btn--ghost nav-link">Login</button>
       <button id="shareBtn" class="btn btn--ghost" type="button" hidden>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -395,7 +396,10 @@
         <input id="shareLinkInput" class="input" readonly />
         <button id="shareCopyBtn" class="btn btn--primary btn--sm" type="button">Copy</button>
       </div>
-      <div class="share-presence"><span class="collab-banner__dot"></span><span id="collabPresence">Just you so far</span></div>
+      <div class="share-presence">
+        <div id="shareAvatars" class="collab-avatars"></div>
+        <span id="collabPresence">Just you so far</span>
+      </div>
       <hr class="rule" />
       <button id="stopSharingBtn" class="btn btn--ghost btn--block" type="button">Stop sharing</button>
     </div>
@@ -430,6 +434,6 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=21"></script>
+  <script type="module" src="app.js?v=22"></script>
 </body>
 </html>
