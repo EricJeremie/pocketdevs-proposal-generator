@@ -724,3 +724,31 @@ button, input, textarea, select { font-family: inherit; }
   .dash-page__search { max-width: 100%; }
   .dash-page__grid { grid-template-columns: 1fr; gap: 0.5rem; }
 }
+
+/* ============================================================
+   Site-wide preloader
+   Inlined as the first <body> element so it paints instantly with no flash of
+   the page behind it; preloader.js fades it out once the page has loaded.
+   ============================================================ */
+.preloader {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-card);
+  transition: opacity 0.45s ease;
+}
+.preloader--hidden { opacity: 0; pointer-events: none; }
+.preloader__inner { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+.preloader__logo { height: 34px; animation: preloader-pulse 1.5s ease-in-out infinite; }
+.preloader__spinner {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 3px solid var(--rausch-tint); border-top-color: var(--rausch);
+  animation: preloader-spin 0.7s linear infinite;
+}
+@keyframes preloader-spin { to { transform: rotate(360deg); } }
+@keyframes preloader-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.94); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .preloader__logo, .preloader__spinner { animation: none; }
+}
