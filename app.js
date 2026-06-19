@@ -5,7 +5,7 @@
    ============================================================ */
 'use strict';
 
-import { getSession, signIn, signUp, saveProposal, fetchUserProposals, deleteProposal, fetchProposalById, fetchUserQuestionnaires, deleteQuestionnaire, SUPABASE_URL, SUPABASE_ANON_KEY, updateUserProfile, updateUserEmail, updateUserPassword, enableShare, disableShare, getSharedDoc, saveSharedDoc, createDocChannel } from './supabase.js?v=27';
+import { getClient, getSession, signIn, signUp, saveProposal, fetchUserProposals, deleteProposal, fetchProposalById, fetchUserQuestionnaires, deleteQuestionnaire, SUPABASE_URL, SUPABASE_ANON_KEY, updateUserProfile, updateUserEmail, updateUserPassword, enableShare, disableShare, getSharedDoc, saveSharedDoc, createDocChannel } from './supabase.js?v=27';
 import { initLayout } from './nav.js?v=27';
 import { createQuickSearch } from './quick-search.js';
 
@@ -140,7 +140,7 @@ const paras = (s) => String(s || '').split(/\n{2,}/).map((p) => p.trim()).filter
   .map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('');
 
 /* ---------- State ---------- */
-let pdfBase64 = null;
+let pdfFile = null;
 let pdfName = null;
 
 /* ---------- Status ---------- */
@@ -191,17 +191,16 @@ function handleFile(file) {
     setStatus('error', 'Please choose a PDF file.');
     return;
   }
-  const reader = new FileReader();
-  reader.onload = () => {
-    pdfBase64 = String(reader.result).split(',')[1] || null;
-    pdfName = file.name;
-    const dz = $('dropzone');
-    dz.classList.add('has-file');
-    $('fileName').textContent = `${file.name} · ${(file.size / 1024).toFixed(0)} KB`;
-    setStatus('', '');
-  };
-  reader.onerror = () => setStatus('error', 'Could not read that file.');
-  reader.readAsDataURL(file);
+  if (file.size > 12 * 1024 * 1024) {
+    setStatus('error', 'That PDF is over 12 MB. Please use a smaller PDF.');
+    return;
+  }
+  pdfFile = file;
+  pdfName = file.name;
+  const dz = $('dropzone');
+  dz.classList.add('has-file');
+  $('fileName').textContent = `${file.name} · ${(file.size / 1024).toFixed(0)} KB`;
+  setStatus('', '');
 }
 
 function handleLogo(file) {
@@ -270,7 +269,7 @@ async function generate() {
   }
   const intake = collectIntake();
   const hasDetails = intake.company || intake.title || intake.notes;
-  if (!pdfBase64 && !hasDetails) {
+  if (!pdfFile && !hasDetails) {
     setStatus('error', 'Drop a PDF brief, or fill in at least the company/project details.');
     return;
   }
@@ -280,7 +279,7 @@ async function generate() {
   setStatus('working', '<span class="spinner"></span> Reading the document and drafting all 10 sections… this can take 30–60s.');
 
   const userText =
-    'Draft a PocketDevs proposal' + (pdfBase64 ? ' based on the attached source document and these confirmed details.' : ' from these confirmed details.') +
+    'Draft a PocketDevs proposal' + (pdfFile ? ' based on the attached source document and these confirmed details.' : ' from these confirmed details.') +
     '\\nUse ONLY these confirmed values for hard facts; output "[TBD]" for anything missing, EXCEPT totalCost/budget — ' +
     'if those are not provided, estimate a ballpark budget range based on the scope and complexity instead.\\n\\n' +
     'CONFIRMED DETAILS (JSON):\\n' + JSON.stringify({
@@ -306,9 +305,6 @@ async function generate() {
     '\\n\\nReturn the full structured proposal.';
 
   const content = [];
-  if (pdfBase64) {
-    content.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdfBase64 } });
-  }
   content.push({ type: 'text', text: userText });
 
   const body = {
@@ -320,7 +316,25 @@ async function generate() {
     output_config: { format: { type: 'json_schema', schema: PROPOSAL_SCHEMA }, effort: 'high' },
   };
 
+  let uploadedBriefPath = null;
+  let storageClient = null;
   try {
+    if (pdfFile) {
+      setStatus('working', '<span class="spinner"></span> Uploading the source PDF securely…');
+      storageClient = await getClient();
+      if (!storageClient) throw new Error('Secure document storage is temporarily unavailable.');
+      uploadedBriefPath = `${session.user.id}/${crypto.randomUUID()}.pdf`;
+      const { error: uploadError } = await storageClient.storage
+        .from('proposal-briefs')
+        .upload(uploadedBriefPath, pdfFile, { contentType: 'application/pdf', upsert: false });
+      if (uploadError) throw new Error(`Could not upload the PDF: ${uploadError.message}`);
+      body.source_document = {
+        bucket: 'proposal-briefs',
+        path: uploadedBriefPath,
+        name: pdfName,
+      };
+      setStatus('working', '<span class="spinner"></span> Reading the document and drafting all 10 sections… this can take 30–60s.');
+    }
     let res;
     try {
       res = await fetch(API_URL, {
@@ -385,8 +399,12 @@ async function generate() {
     } catch (e) { /* history is optional — ignore */ }
     setStatus('ok', `Proposal generated! Click any text to edit, then <b>Download PDF</b>.`);
   } catch (err) {
-    setStatus('error', `Network error: ${esc(err.message)}.`);
+    setStatus('error', `Generation failed: ${esc(err.message)}.`);
   } finally {
+    if (uploadedBriefPath && storageClient) {
+      try { await storageClient.storage.from('proposal-briefs').remove([uploadedBriefPath]); }
+      catch { /* temporary files are private; cleanup is best effort */ }
+    }
     btn.disabled = false;
   }
 }

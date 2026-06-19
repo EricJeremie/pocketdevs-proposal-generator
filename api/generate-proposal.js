@@ -1,6 +1,8 @@
 const { verifySupabaseSession } = require('../lib/supabase');
 
 const GEMINI_MODEL = 'gemini-2.5-flash';
+const BRIEF_BUCKET = 'proposal-briefs';
+const MAX_BRIEF_BYTES = 12 * 1024 * 1024;
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -93,11 +95,56 @@ async function handle(req, res) {
     return sendJson(res, { error: { message: 'Invalid JSON body' } }, 400);
   }
 
+  let storedDocument = null;
+  const sourceDocument = body?.source_document;
+  if (sourceDocument) {
+    const path = typeof sourceDocument.path === 'string' ? sourceDocument.path : '';
+    const expectedPrefix = `${sessionCheck.user.id}/`;
+    const validPath = path.startsWith(expectedPrefix)
+      && /^[0-9a-f-]{36}\/[A-Za-z0-9._-]+\.pdf$/i.test(path);
+    if (sourceDocument.bucket !== BRIEF_BUCKET || !validPath) {
+      return sendJson(res, { error: { message: 'Invalid source document reference.' } }, 400);
+    }
+
+    const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+    let documentRes;
+    try {
+      documentRes = await fetch(
+        `${process.env.SUPABASE_URL || 'https://xiykfvyjavkkmfqujcql.supabase.co'}/storage/v1/object/authenticated/${BRIEF_BUCKET}/${encodedPath}`,
+        {
+          headers: {
+            apikey: process.env.SUPABASE_ANON_KEY || 'sb_publishable_CoqmS7OUcHBQ55Ho22xgyg_RYYtUoLk',
+            authorization: `Bearer ${token}`,
+          },
+        },
+      );
+    } catch {
+      return sendJson(res, { error: { message: 'Document storage is temporarily unavailable. Please try again.' } }, 502);
+    }
+    if (!documentRes.ok) {
+      return sendJson(res, { error: { message: 'Could not read the uploaded PDF. Please upload it again.' } }, 400);
+    }
+    const bytes = Buffer.from(await documentRes.arrayBuffer());
+    if (bytes.length > MAX_BRIEF_BYTES) {
+      return sendJson(res, { error: { message: 'The source PDF must be 12 MB or smaller.' } }, 413);
+    }
+    storedDocument = bytes.toString('base64');
+  }
+
   const messages = Array.isArray(body?.messages) ? body.messages : [];
   const contents = messages.map((message) => ({
     role: message.role === 'assistant' ? 'model' : 'user',
     parts: toGeminiParts(message.content),
   }));
+  if (storedDocument) {
+    const firstUserMessage = contents.find((message) => message.role === 'user');
+    if (!firstUserMessage) {
+      return sendJson(res, { error: { message: 'A user message is required.' } }, 400);
+    }
+    firstUserMessage.parts.unshift({
+      inline_data: { mime_type: 'application/pdf', data: storedDocument },
+    });
+  }
 
   const generationConfig = {
     maxOutputTokens: body?.max_tokens ?? 16000,
