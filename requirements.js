@@ -3,6 +3,11 @@ import { initLayout } from './nav.js?v=19';
 
 const REQ_API_URL = '/api/generate-requirements';
 
+function normalizeBearerToken(raw) {
+  const cleaned = String(raw || '').replace(/[^A-Za-z0-9._-]/g, '');
+  return cleaned.split('.').length === 3 ? cleaned : '';
+}
+
 /* ---------- DOM helpers ---------- */
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s)
@@ -733,16 +738,26 @@ function setChatError(message = '') {
 
 async function callRequirementsAPI(payload) {
   const session = currentSession !== undefined ? currentSession : await getSession();
-  const authToken = String(session && session.access_token ? session.access_token : '').replace(/\s+/g, '').trim();
+  const authToken = normalizeBearerToken(session && session.access_token ? session.access_token : '');
   if (!authToken) throw Object.assign(new Error('Please sign in to continue.'), { status: 401 });
-  const res = await fetch(REQ_API_URL, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      authorization: `Bearer ${authToken}`,
-    },
-    body: JSON.stringify(payload),
-  });
+  let res;
+  try {
+    res = await fetch(REQ_API_URL, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${authToken}`,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    if (/pattern|header|invalid/i.test(err && err.message ? err.message : '')) {
+      const sessionErr = new Error('Your sign-in session looks corrupted. Please sign out and sign back in.');
+      sessionErr.status = 401;
+      throw sessionErr;
+    }
+    throw err;
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const err = new Error(data?.error?.message || `Request failed (HTTP ${res.status}).`);

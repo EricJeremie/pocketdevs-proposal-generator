@@ -177,6 +177,11 @@ function currencySymbol(id = 'f_currency') {
   return (opt && opt.dataset.symbol) || '';
 }
 
+function normalizeBearerToken(raw) {
+  const cleaned = String(raw || '').replace(/[^A-Za-z0-9._-]/g, '');
+  return cleaned.split('.').length === 3 ? cleaned : '';
+}
+
 /* ---------- File handling ---------- */
 function handleFile(file) {
   if (!file) return;
@@ -255,7 +260,7 @@ async function generate() {
   // server-side and requires a signed-in user. We need a valid Supabase
   // session token to authorize the call.
   const session = await getSession();
-  const authToken = String(session && session.access_token ? session.access_token : '').replace(/\s+/g, '').trim();
+  const authToken = normalizeBearerToken(session && session.access_token ? session.access_token : '');
   if (!authToken) {
     showAuthModal();
     setStatus('error', 'Please sign in to generate a proposal.');
@@ -314,14 +319,24 @@ async function generate() {
   };
 
   try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'authorization': `Bearer ${authToken}`,
-      },
-      body: JSON.stringify(body),
-    });
+    let res;
+    try {
+      res = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'authorization': `Bearer ${authToken}`,
+        },
+        body: JSON.stringify(body),
+      });
+    } catch (err) {
+      if (/pattern|header|invalid/i.test(err && err.message ? err.message : '')) {
+        showAuthModal();
+        setStatus('error', 'Your sign-in session looks corrupted. Please sign out and sign back in.');
+        return;
+      }
+      throw err;
+    }
     const data = await res.json();
 
     if (!res.ok) {
