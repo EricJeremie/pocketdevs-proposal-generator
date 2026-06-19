@@ -1,7 +1,9 @@
 import { SUPABASE_URL, SUPABASE_ANON_KEY, getSession, signIn, signUp, onAuthChange, saveQuestionnaire, fetchSubmissionById, submitClientQuestionnaire } from './supabase.js?v=19';
 import { initLayout } from './nav.js?v=19';
 
-const REQ_API_URL = '/api/generate-requirements';
+const PRODUCTION_ORIGIN = 'https://pocketdevs-proposal-generator.vercel.app';
+const IS_LOCAL_PREVIEW = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+const REQ_API_URL = `${IS_LOCAL_PREVIEW ? PRODUCTION_ORIGIN : window.location.origin}/api/generate-requirements`;
 
 function normalizeBearerToken(raw) {
   const cleaned = String(raw || '').replace(/[^A-Za-z0-9._-]/g, '');

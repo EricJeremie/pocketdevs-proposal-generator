@@ -13,7 +13,9 @@ import { createQuickSearch } from './quick-search.js';
 const MODEL = 'gemini-2.5-flash';
 // Generation goes through a Vercel Function, which holds the Gemini key
 // as a server-side secret. The browser never sees the key.
-const API_URL = '/api/generate-proposal';
+const PRODUCTION_ORIGIN = 'https://pocketdevs-proposal-generator.vercel.app';
+const IS_LOCAL_PREVIEW = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+const API_URL = `${IS_LOCAL_PREVIEW ? PRODUCTION_ORIGIN : window.location.origin}/api/generate-proposal`;
 const LS_LOGO = 'pdv_logo';
 const DEFAULT_LOGO = 'assets/logo.svg';
 
@@ -337,7 +339,13 @@ async function generate() {
       }
       throw err;
     }
-    const data = await res.json();
+    const responseText = await res.text();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      throw new Error(`Proposal service returned an unexpected response (HTTP ${res.status}). Please use ${PRODUCTION_ORIGIN}.`);
+    }
 
     if (!res.ok) {
       const msg = data && data.error ? data.error.message : `HTTP ${res.status}`;
