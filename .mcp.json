@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "proposal-generator": {
+      "command": "python3",
+      "args": ["${CLAUDE_PROJECT_DIR:-.}/mcp/server.py"],
+      "env": {
+        "PROPOSAL_GENERATOR_OWNER_EMAIL": "e.rotaquio@pocketdevs.ph"
+      }
+    }
+  }
+}

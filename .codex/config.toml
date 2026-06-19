@@ -1,0 +1,5 @@
+[mcp_servers.proposal-generator]
+command = "python3"
+args = ["mcp/server.py"]
+cwd = ".."
+env = { PROPOSAL_GENERATOR_OWNER_EMAIL = "e.rotaquio@pocketdevs.ph" }

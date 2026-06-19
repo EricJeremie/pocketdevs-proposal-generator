@@ -1,2 +1,8 @@
 .claude/
 .DS_Store
+mcp/__pycache__/
+mcp/*.pyc
+mcp/*.pyo
+mcp/*.pyd
+mcp/.env
+mcp/.env.*

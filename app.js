@@ -1,7 +1,7 @@
 /* ============================================================
    PocketDevs Proposal Generator
-   Build-free static app. Calls Google Gemini directly from
-   the browser; renders structured JSON into a branded proposal.
+   Build-free static app. Calls a Vercel API route that holds the
+   Gemini key server-side; renders structured JSON into a branded proposal.
    ============================================================ */
 'use strict';
 
@@ -11,9 +11,9 @@ import { createQuickSearch } from './quick-search.js';
 
 /* ---------- Constants ---------- */
 const MODEL = 'gemini-2.5-flash';
-// Generation goes through a Supabase Edge Function, which holds the
-// Gemini key as a server-side secret. The browser never sees the key.
-const API_URL = `${SUPABASE_URL}/functions/v1/generate-proposal`;
+// Generation goes through a Vercel Function, which holds the Gemini key
+// as a server-side secret. The browser never sees the key.
+const API_URL = '/api/generate-proposal';
 const LS_LOGO = 'pdv_logo';
 const DEFAULT_LOGO = 'assets/logo.svg';
 
@@ -251,9 +251,9 @@ function collectInvoiceIntake() {
 
 /* ---------- Generate ---------- */
 async function generate() {
-  // Generation runs through a Supabase Edge Function, which holds the
-  // Gemini key server-side and requires a signed-in user. We need a valid
-  // Supabase session token to authorize the call.
+  // Generation runs through a Vercel Function, which holds the Gemini key
+  // server-side and requires a signed-in user. We need a valid Supabase
+  // session token to authorize the call.
   const session = await getSession();
   if (!session || !session.access_token) {
     showAuthModal();

@@ -1,7 +1,7 @@
 import { SUPABASE_URL, SUPABASE_ANON_KEY, getSession, signIn, signUp, onAuthChange, saveQuestionnaire, fetchSubmissionById, submitClientQuestionnaire } from './supabase.js';
 import { initLayout } from './nav.js';
 
-const REQ_API_URL = `${SUPABASE_URL}/functions/v1/generate-requirements`;
+const REQ_API_URL = '/api/generate-requirements';
 
 /* ---------- DOM helpers ---------- */
 const $ = (id) => document.getElementById(id);
