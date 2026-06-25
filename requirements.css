@@ -42,7 +42,7 @@
 .rq-mode__logo {
   display: none;
   height: 32px;
-  margin: 0 auto 2rem;
+  margin: 0 0 2rem;
 }
 .rq-mode__eyebrow {
   color: var(--rausch);
@@ -944,7 +944,7 @@ body.client-intake .rq-mode__logo { display: block; }
     padding: 1rem 0 2rem;
     text-align: center;
   }
-  .rq-mode__logo { height: 34px; margin-bottom: 2.25rem; }
+  .rq-mode__logo { align-self: flex-start; height: 34px; margin-bottom: 2.25rem; }
   .rq-mode__intro { margin-left: auto; margin-right: auto; }
   .rq-mode__title { font-size: 2.35rem; }
   .rq-mode-card { min-height: auto; padding: 1.1rem; text-align: left; width: 100%; }
