@@ -39,6 +39,11 @@
   justify-content: center;
   padding: 3rem 0 5rem;
 }
+.rq-mode__logo {
+  display: none;
+  height: 32px;
+  margin: 0 auto 2rem;
+}
 .rq-mode__eyebrow {
   color: var(--rausch);
   font-size: 0.75rem;
@@ -554,16 +559,18 @@
    chrome, and surface the brand logo in the top bar — it normally lives in the
    sidebar, which clients never see. */
 .appbar__brand-logo { display: none; }            /* staff mode: sidebar shows the logo */
-body.client-intake .appbar { left: 0; }
+body.client-intake { padding-top: 0; }
+body.client-intake .appbar { display: none; left: 0; }
 body.client-intake .app-body { margin-left: 0; }
 body.client-intake .appbar__actions { display: none; }
 body.client-intake .appbar__brand-logo { display: block; }
+body.client-intake .rq-mode__logo { display: block; }
 /* On mobile the staff layout hides the appbar in favour of an injected mobile
    bar — but that bar is never injected in client mode, which left a dead gap at
    the top. Keep the appbar as the fixed header instead and drop the redundant
    mobile-bar spacing (body already pads for the fixed appbar). */
 @media (max-width: 768px) {
-  body.client-intake .appbar { display: flex; }
+  body.client-intake .appbar { display: none; }
   body.client-intake .app-body { padding-top: 0; }
 }
 
@@ -933,10 +940,11 @@ body.client-intake .appbar__brand-logo { display: block; }
 @media (max-width: 600px) {
   .rq-mode {
     align-items: center;
-    min-height: calc(100dvh - var(--appbar-h) - 3rem);
+    min-height: 100dvh;
     padding: 1rem 0 2rem;
     text-align: center;
   }
+  .rq-mode__logo { height: 34px; margin-bottom: 2.25rem; }
   .rq-mode__intro { margin-left: auto; margin-right: auto; }
   .rq-mode__title { font-size: 2.35rem; }
   .rq-mode-card { min-height: auto; padding: 1.1rem; text-align: left; width: 100%; }
