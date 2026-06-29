@@ -1547,8 +1547,8 @@ body.marketing-page--home::after {
   z-index: 1;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.68) 38%, rgba(255, 255, 255, 0.1) 72%),
-    radial-gradient(circle at 50% 50%, transparent 0, rgba(255, 255, 255, 0.24) 68%, rgba(255, 255, 255, 0.72) 100%);
+    linear-gradient(90deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.66) 36%, rgba(255, 255, 255, 0.04) 72%),
+    radial-gradient(circle at 50% 50%, transparent 0, rgba(255, 255, 255, 0.14) 68%, rgba(255, 255, 255, 0.58) 100%);
 }
 .landing-canvas {
   position: fixed;
@@ -1564,7 +1564,10 @@ body.marketing-page--home::after {
   opacity: 0;
   transition: opacity 0.7s ease;
 }
-.scene-ready #propelloScene { opacity: 1; }
+.scene-ready #propelloScene {
+  filter: saturate(1.08) contrast(1.05);
+  opacity: 1;
+}
 .landing-scene-fallback {
   position: absolute;
   inset: auto -10vw -16rem auto;
@@ -1576,7 +1579,7 @@ body.marketing-page--home::after {
   background:
     linear-gradient(135deg, rgba(26, 86, 176, 0.18), rgba(96, 165, 250, 0.08)),
     repeating-linear-gradient(90deg, rgba(26, 86, 176, 0.16) 0 1px, transparent 1px 30px);
-  filter: blur(1px);
+  filter: contrast(1.04);
 }
 .scene-reduced .landing-scene-fallback,
 .scene-no-webgl .landing-scene-fallback { opacity: 1; }
