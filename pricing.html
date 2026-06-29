@@ -3,148 +3,149 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Propello — Pricing</title>
+  <title>Propello - Pricing</title>
   <meta name="description" content="Flexible Propello plans for every team. Start free during preview. Pricing in PHP with BPI and GCash at launch." />
   <link rel="icon" href="assets/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="marketing.css?v=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="marketing.css?v=2" />
 </head>
-<body class="marketing-page">
-
-  <div class="bg-field" aria-hidden="true">
-    <span class="bg-orb bg-orb--1"></span>
-    <span class="bg-orb bg-orb--2"></span>
-    <span class="bg-orb bg-orb--3"></span>
-  </div>
-
-  <div class="scroll-progress" aria-hidden="true"></div>
-  <div class="scroll-readout" aria-hidden="true"><span>0%</span></div>
-
-  <header class="nav">
-    <a class="nav__brand" href="home.html" aria-label="Propello home">
+<body class="marketing-page page-pricing">
+  <header class="site-nav" data-nav>
+    <a class="site-nav__brand" href="home.html" aria-label="Propello home">
       <img src="assets/logo-light.svg" alt="Propello" />
     </a>
-    <nav class="nav__links" aria-label="Main navigation">
+    <nav class="site-nav__links" aria-label="Main navigation">
       <a href="home.html#solutions">Solutions</a>
       <a href="home.html#features">Features</a>
+      <a href="home.html#ai-power">AI Power</a>
       <a class="is-active" href="pricing.html">Pricing</a>
       <a href="about.html">About</a>
+      <a class="site-nav__cta" href="index.html">Open app <span class="btn-dot" aria-hidden="true">+</span></a>
     </nav>
-    <div class="nav__right">
-      <a class="btn btn--primary nav__cta" href="index.html">
-        Open app
-        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </a>
-      <button class="nav__burger" aria-label="Open menu"><span></span></button>
-    </div>
+    <button class="site-nav__menu" type="button" aria-label="Open menu" aria-expanded="false" data-menu-toggle>
+      <span></span>
+    </button>
   </header>
 
-  <nav class="mobile-menu" aria-label="Mobile navigation">
+  <nav class="mobile-panel" aria-label="Mobile navigation" data-mobile-menu>
     <a href="home.html#solutions">Solutions</a>
     <a href="home.html#features">Features</a>
+    <a href="home.html#ai-power">AI Power</a>
     <a href="pricing.html">Pricing</a>
     <a href="about.html">About</a>
-    <a class="btn btn--primary" href="index.html">Open app</a>
+    <a class="btn btn--primary" href="index.html">Open app <span class="btn-dot" aria-hidden="true">+</span></a>
   </nav>
 
   <main>
-    <section class="pricing-hero shell">
-      <span class="eyebrow" data-reveal style="justify-content:center;display:flex;">Pricing</span>
-      <h1 data-reveal data-reveal-delay="80">Flexible plans for <span class="grad">every team.</span></h1>
-      <p data-reveal data-reveal-delay="160">Start free during preview. Pricing in PHP, with BPI and GCash supported at launch.</p>
+    <section class="sub-hero sub-hero--pricing">
+      <div class="sub-hero__media" aria-hidden="true">
+        <div class="price-hero-card">
+          <span>Preview beta</span>
+          <strong>PHP pricing</strong>
+          <i></i><i></i><i></i>
+        </div>
+      </div>
+      <div class="sub-hero__copy">
+        <span class="eyebrow" data-reveal>Pricing</span>
+        <h1 data-reveal data-reveal-delay="80">Flexible plans for every team.</h1>
+        <p data-reveal data-reveal-delay="160">Start free during preview. Pricing in PHP, with BPI and GCash supported at launch.</p>
+      </div>
     </section>
 
-    <section class="pricing shell" style="padding-top: 2rem;">
-      <div class="price-grid">
+    <section class="pricing-section pricing-section--page">
+      <div class="price-grid shell">
         <article class="price-card" data-reveal>
           <h3>Starter</h3>
-          <p class="price-card__desc">Ideal for individuals and small teams shaping their first proposals.</p>
-          <div class="price-card__price"><b>₱990</b><span>/mo</span></div>
+          <p>Ideal for individuals and small teams shaping their first proposals.</p>
+          <div class="price-card__price"><strong>₱990</strong><span>/mo</span></div>
           <ul>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Up to 2 users</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Core AI drafting</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Reusable scope blocks</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> PDF export</li>
+            <li>Up to 2 users</li>
+            <li>Core AI drafting</li>
+            <li>Reusable scope blocks</li>
+            <li>PDF export</li>
           </ul>
-          <a class="btn btn--ghost" href="index.html">Get started</a>
+          <a class="btn btn--dark" href="index.html">Get started</a>
         </article>
-
-        <article class="price-card price-card--featured" data-reveal data-reveal-delay="90">
+        <article class="price-card price-card--featured" data-reveal data-reveal-delay="100">
           <span class="price-card__tag">Most popular</span>
           <h3>Team</h3>
-          <p class="price-card__desc">For growing teams that need governance and brand controls.</p>
-          <div class="price-card__price"><b>₱2,490</b><span>/mo</span></div>
+          <p>For growing teams that need governance and brand controls.</p>
+          <div class="price-card__price"><strong>₱2,490</strong><span>/mo</span></div>
           <ul>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Up to 10 users</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Advanced AI drafting</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Review gates &amp; versions</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Brand controls</li>
+            <li>Up to 10 users</li>
+            <li>Advanced AI drafting</li>
+            <li>Review gates and versions</li>
+            <li>Brand controls</li>
           </ul>
           <a class="btn btn--primary" href="index.html">Start free trial</a>
         </article>
-
-        <article class="price-card" data-reveal data-reveal-delay="180">
+        <article class="price-card" data-reveal data-reveal-delay="200">
           <h3>Studio</h3>
-          <p class="price-card__desc">For larger teams needing industry profiles and priority support.</p>
-          <div class="price-card__price"><b>₱4,990</b><span>/mo</span></div>
+          <p>For larger teams needing industry profiles and priority support.</p>
+          <div class="price-card__price"><strong>₱4,990</strong><span>/mo</span></div>
           <ul>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Unlimited users</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Custom industry profiles</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Dedicated onboarding</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Priority support</li>
+            <li>Unlimited users</li>
+            <li>Custom industry profiles</li>
+            <li>Dedicated onboarding</li>
+            <li>Priority support</li>
           </ul>
-          <a class="btn btn--ghost" href="index.html">Talk to us</a>
+          <a class="btn btn--dark" href="index.html">Talk to us</a>
         </article>
       </div>
-      <p class="billing-note" data-reveal style="text-align:center;">Preview pricing — internal teams are free during the current beta. Plans finalize at launch.</p>
+      <p class="billing-note shell" data-reveal>Preview pricing - internal teams are free during the current beta. Plans finalize at launch.</p>
     </section>
 
-    <section class="cta shell">
-      <div class="cta__inner" data-reveal>
-        <span class="eyebrow">Get started</span>
+    <section class="dark-band dark-band--compact">
+      <div class="section-head section-head--center shell">
+        <span class="eyebrow center" data-reveal>What is included</span>
+        <h2 data-reveal data-reveal-delay="80">Proposal workflow, from brief to PDF.</h2>
+      </div>
+      <div class="principle-grid shell">
+        <article data-reveal>
+          <strong>AI drafting</strong>
+          <p>Generate structure, language, and starting copy from a brief.</p>
+        </article>
+        <article data-reveal data-reveal-delay="90">
+          <strong>Internal toolkit</strong>
+          <p>Manage templates, scope blocks, pricing, review status, and versions.</p>
+        </article>
+        <article data-reveal data-reveal-delay="180">
+          <strong>Brand output</strong>
+          <p>Apply your logo, main proposal color, and export a client-ready PDF.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="final-cta shell">
+      <div class="final-cta__card" data-reveal>
+        <span class="eyebrow center">Get started</span>
         <h2>Try Propello free during preview.</h2>
         <p>No commitment. Open the app, draft a proposal, and see the workflow for yourself.</p>
-        <div class="cta__actions">
-          <a class="btn btn--primary" href="index.html">
-            Open app
-            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </a>
-          <a class="btn btn--ghost" href="about.html">Learn more</a>
+        <div class="button-row button-row--center">
+          <a class="btn btn--light" href="index.html">Open app <span class="btn-dot" aria-hidden="true">+</span></a>
+          <a class="btn btn--glass" href="about.html">Learn more</a>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="footer shell">
-    <div class="footer__top">
-      <div class="footer__brand">
-        <img src="assets/logo-light.svg" alt="Propello" />
-        <p>The proposal generator for professional service teams. Move deals forward, faster.</p>
-        <a class="mail" href="mailto:hello@propello.app">hello@propello.app</a>
-      </div>
-      <div class="footer__col">
-        <h4>Menu</h4>
-        <a href="home.html#solutions">Solutions</a>
-        <a href="home.html#features">Features</a>
-        <a href="pricing.html">Pricing</a>
-        <a href="about.html">About</a>
-      </div>
-      <div class="footer__col">
-        <h4>Socials</h4>
-        <a href="#">Instagram</a>
-        <a href="#">LinkedIn</a>
-        <a href="#">X</a>
-        <a href="index.html">Open app</a>
-      </div>
+  <footer class="site-footer shell">
+    <div>
+      <img src="assets/logo-light.svg" alt="Propello" />
+      <p>The proposal generator for professional service teams. Move deals forward, faster.</p>
     </div>
-    <div class="footer__bottom">
-      <span>© 2026 Propello · Confidential</span>
-      <span>Built for service teams · www.propello.app</span>
-    </div>
+    <nav aria-label="Footer navigation">
+      <a href="home.html#solutions">Solutions</a>
+      <a href="home.html#features">Features</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="about.html">About</a>
+      <a href="index.html">Open app</a>
+    </nav>
+    <span>&copy; 2026 Propello. Confidential.</span>
   </footer>
 
-  <script src="marketing.js?v=1"></script>
+  <script src="marketing.js?v=2"></script>
 </body>
 </html>

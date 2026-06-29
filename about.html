@@ -3,64 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Propello — About</title>
-  <meta name="description" content="Propello helps experts move faster without losing judgment. AI supports the expert — it doesn't replace them." />
+  <title>Propello - About</title>
+  <meta name="description" content="Propello helps experts move faster without losing judgment. AI supports the expert - it does not replace them." />
   <link rel="icon" href="assets/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="marketing.css?v=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="marketing.css?v=2" />
 </head>
-<body class="marketing-page">
-
-  <div class="bg-field" aria-hidden="true">
-    <span class="bg-orb bg-orb--1"></span>
-    <span class="bg-orb bg-orb--2"></span>
-    <span class="bg-orb bg-orb--3"></span>
-  </div>
-
-  <div class="scroll-progress" aria-hidden="true"></div>
-  <div class="scroll-readout" aria-hidden="true"><span>0%</span></div>
-
-  <header class="nav">
-    <a class="nav__brand" href="home.html" aria-label="Propello home">
+<body class="marketing-page page-about">
+  <header class="site-nav" data-nav>
+    <a class="site-nav__brand" href="home.html" aria-label="Propello home">
       <img src="assets/logo-light.svg" alt="Propello" />
     </a>
-    <nav class="nav__links" aria-label="Main navigation">
+    <nav class="site-nav__links" aria-label="Main navigation">
       <a href="home.html#solutions">Solutions</a>
       <a href="home.html#features">Features</a>
+      <a href="home.html#ai-power">AI Power</a>
       <a href="pricing.html">Pricing</a>
       <a class="is-active" href="about.html">About</a>
+      <a class="site-nav__cta" href="index.html">Open app <span class="btn-dot" aria-hidden="true">+</span></a>
     </nav>
-    <div class="nav__right">
-      <a class="btn btn--primary nav__cta" href="index.html">
-        Open app
-        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </a>
-      <button class="nav__burger" aria-label="Open menu"><span></span></button>
-    </div>
+    <button class="site-nav__menu" type="button" aria-label="Open menu" aria-expanded="false" data-menu-toggle>
+      <span></span>
+    </button>
   </header>
 
-  <nav class="mobile-menu" aria-label="Mobile navigation">
+  <nav class="mobile-panel" aria-label="Mobile navigation" data-mobile-menu>
     <a href="home.html#solutions">Solutions</a>
     <a href="home.html#features">Features</a>
+    <a href="home.html#ai-power">AI Power</a>
     <a href="pricing.html">Pricing</a>
     <a href="about.html">About</a>
-    <a class="btn btn--primary" href="index.html">Open app</a>
+    <a class="btn btn--primary" href="index.html">Open app <span class="btn-dot" aria-hidden="true">+</span></a>
   </nav>
 
   <main>
-    <section class="about-hero shell">
-      <span class="eyebrow" data-reveal style="justify-content:center;display:flex;">About Propello</span>
-      <h1 data-reveal data-reveal-delay="80">We help experts move faster without losing <span class="grad">judgment.</span></h1>
-      <p data-reveal data-reveal-delay="160">
-        Propello was built for teams that need to move from scattered client context to a clear
-        commercial document — without losing nuance, taste, or brand quality.
-      </p>
+    <section class="sub-hero">
+      <div class="sub-hero__media" aria-hidden="true">
+        <div class="proposal-stack proposal-stack--small">
+          <span class="proposal-page proposal-page--back"></span>
+          <span class="proposal-page proposal-page--front"><i></i><i></i><i></i></span>
+        </div>
+      </div>
+      <div class="sub-hero__copy">
+        <span class="eyebrow" data-reveal>About Propello</span>
+        <h1 data-reveal data-reveal-delay="80">We help experts move faster without losing judgment.</h1>
+        <p data-reveal data-reveal-delay="160">Propello was built for teams that need to move from scattered client context to a clear commercial document without losing nuance, taste, or brand quality.</p>
+      </div>
     </section>
 
-    <section class="about-grid shell">
-      <article class="about-panel is-feature" data-reveal>
+    <section class="about-panels shell">
+      <article class="about-panel about-panel--wide" data-reveal>
         <span>Our point of view</span>
         <h2>AI should support the expert, not replace the expert.</h2>
         <p>The best proposals still need human taste: what to include, what to exclude, how to price, and how to communicate risk. Propello handles the structure so teams can focus on decisions.</p>
@@ -68,71 +62,64 @@
       <article class="about-panel" data-reveal data-reveal-delay="90">
         <span>What we optimize for</span>
         <h2>Clarity before cleverness.</h2>
-        <p>We prioritize clean scopes, grounded assumptions, sensible terms, and proposal language a client can understand quickly.</p>
+        <p>Clean scopes, grounded assumptions, sensible terms, and proposal language a client can understand quickly.</p>
       </article>
       <article class="about-panel" data-reveal data-reveal-delay="180">
         <span>How it grows</span>
-        <h2>Industry profiles, not one-size-fits-all templates.</h2>
+        <h2>Industry profiles, not one-size templates.</h2>
         <p>Propello adapts templates, questions, deliverables, exclusions, and pricing guidance to different service industries.</p>
       </article>
     </section>
 
-    <section class="values shell">
-      <div class="section-head">
+    <section class="dark-band dark-band--compact">
+      <div class="section-head shell">
         <span class="eyebrow" data-reveal>Operating principles</span>
         <h2 data-reveal data-reveal-delay="80">Small product, strong habits.</h2>
       </div>
-      <div class="values-list">
-        <div data-reveal><strong>Grounded outputs</strong><span>Use the facts provided and mark uncertainty instead of inventing details.</span></div>
-        <div data-reveal data-reveal-delay="90"><strong>Editable systems</strong><span>Keep templates and industry content structured so teams can improve them over time.</span></div>
-        <div data-reveal data-reveal-delay="180"><strong>Quiet confidence</strong><span>Write proposals that feel polished, direct, and commercially mature.</span></div>
+      <div class="principle-grid shell">
+        <article data-reveal>
+          <strong>Grounded outputs</strong>
+          <p>Use the facts provided and mark uncertainty instead of inventing details.</p>
+        </article>
+        <article data-reveal data-reveal-delay="90">
+          <strong>Editable systems</strong>
+          <p>Keep templates and industry content structured so teams can improve them over time.</p>
+        </article>
+        <article data-reveal data-reveal-delay="180">
+          <strong>Quiet confidence</strong>
+          <p>Write proposals that feel polished, direct, and commercially mature.</p>
+        </article>
       </div>
     </section>
 
-    <section class="cta shell">
-      <div class="cta__inner" data-reveal>
-        <span class="eyebrow">Ready when you are</span>
+    <section class="final-cta shell">
+      <div class="final-cta__card" data-reveal>
+        <span class="eyebrow center">Ready when you are</span>
         <h2>Build your next proposal with Propello.</h2>
         <p>Open the app, tailor it to your industry, and export a branded document your team is proud to send.</p>
-        <div class="cta__actions">
-          <a class="btn btn--primary" href="index.html">
-            Open app
-            <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </a>
-          <a class="btn btn--ghost" href="pricing.html">View pricing</a>
+        <div class="button-row button-row--center">
+          <a class="btn btn--light" href="index.html">Open app <span class="btn-dot" aria-hidden="true">+</span></a>
+          <a class="btn btn--glass" href="pricing.html">View pricing</a>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="footer shell">
-    <div class="footer__top">
-      <div class="footer__brand">
-        <img src="assets/logo-light.svg" alt="Propello" />
-        <p>The proposal generator for professional service teams. Move deals forward, faster.</p>
-        <a class="mail" href="mailto:hello@propello.app">hello@propello.app</a>
-      </div>
-      <div class="footer__col">
-        <h4>Menu</h4>
-        <a href="home.html#solutions">Solutions</a>
-        <a href="home.html#features">Features</a>
-        <a href="pricing.html">Pricing</a>
-        <a href="about.html">About</a>
-      </div>
-      <div class="footer__col">
-        <h4>Socials</h4>
-        <a href="#">Instagram</a>
-        <a href="#">LinkedIn</a>
-        <a href="#">X</a>
-        <a href="index.html">Open app</a>
-      </div>
+  <footer class="site-footer shell">
+    <div>
+      <img src="assets/logo-light.svg" alt="Propello" />
+      <p>The proposal generator for professional service teams. Move deals forward, faster.</p>
     </div>
-    <div class="footer__bottom">
-      <span>© 2026 Propello · Confidential</span>
-      <span>Built for service teams · www.propello.app</span>
-    </div>
+    <nav aria-label="Footer navigation">
+      <a href="home.html#solutions">Solutions</a>
+      <a href="home.html#features">Features</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="about.html">About</a>
+      <a href="index.html">Open app</a>
+    </nav>
+    <span>&copy; 2026 Propello. Confidential.</span>
   </footer>
 
-  <script src="marketing.js?v=1"></script>
+  <script src="marketing.js?v=2"></script>
 </body>
 </html>
