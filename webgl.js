@@ -29,7 +29,25 @@
     console.warn('WebGL unavailable; skipping 3D background.', err && err.message);
     return;
   }
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  // Cap the backing-store resolution so the per-frame render cost stays bounded.
+  // Ultrawide (and other very large) viewports otherwise push tens of millions
+  // of pixels per frame, which starves the scroll/Lenis frame budget and makes
+  // the scroll-scrubbed animation stutter. The background is a soft, decorative
+  // object, so a slightly lower internal resolution is imperceptible.
+  function targetPixelRatio() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const aspect = window.innerWidth / window.innerHeight;
+    // Ultrawide screens (≈21:9 and wider) get a tighter budget; normal screens
+    // keep full DPR but still cap extreme cases (e.g. 5K retina desktops).
+    const widthBudget = aspect >= 2.2 ? 2600 : 3600;
+    const backingWidth = window.innerWidth * dpr;
+    // Scale the ratio down to meet the budget, but never below 0.5 (half-res)
+    // so the background never turns to mush on extreme super-ultrawide screens.
+    if (backingWidth > widthBudget) return Math.max(0.5, widthBudget / window.innerWidth);
+    return dpr;
+  }
+
+  renderer.setPixelRatio(targetPixelRatio());
   renderer.setSize(window.innerWidth, window.innerHeight, false);
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -212,7 +230,7 @@
       camera.aspect = w / h;
       camera.position.z = cameraDistance();
       camera.updateProjectionMatrix();
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setPixelRatio(targetPixelRatio());
       renderer.setSize(w, h, false);
       window.ScrollTrigger.refresh();
     });
