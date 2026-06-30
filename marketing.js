@@ -65,6 +65,25 @@ function initAnchorLinks() {
   });
 }
 
+// The landing page and the web app are separate surfaces. Launch the app in
+// its own window (named so repeat clicks reuse the same one) so the marketing
+// site stays open behind it. Same-origin, so a named target is safe.
+function initAppLinks() {
+  document.querySelectorAll('a[href^="auth.html"]').forEach((link) => {
+    link.target = "propelloApp";
+    // Clean label from visible text only (skip decorative aria-hidden bits).
+    const label = Array.from(link.childNodes)
+      .filter((node) =>
+        node.nodeType === Node.TEXT_NODE ||
+        (node.nodeType === Node.ELEMENT_NODE && node.getAttribute("aria-hidden") !== "true"))
+      .map((node) => node.textContent)
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+    link.setAttribute("aria-label", `${label || "Open app"} (opens the app in a new window)`);
+  });
+}
+
 function initMenu() {
   const toggle = document.querySelector("[data-menu-toggle]");
   if (!toggle) return;
@@ -207,6 +226,7 @@ function initPointerParallax() {
 }
 
 function boot() {
+  initAppLinks();
   initMenu();
   initNavState();
   initReveals();
