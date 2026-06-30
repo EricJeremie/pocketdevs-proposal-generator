@@ -3,12 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Propello — My Documents</title>
+  <title>Propello — My Workspace</title>
+  <!-- Auth gate: hide until we confirm a session, then redirect unauthenticated visitors to login. -->
+  <script>
+    document.documentElement.classList.add('auth-gating');
+    setTimeout(function () { document.documentElement.classList.remove('auth-gating'); }, 4000);
+  </script>
+  <style>html.auth-gating body { visibility: hidden; }</style>
+  <script type="module" src="auth-gate.js?v=1"></script>
   <link rel="icon" href="assets/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=42" />
+  <link rel="stylesheet" href="styles.css?v=43" />
 </head>
 <body>
 
@@ -52,12 +59,33 @@
     <main class="dash-page">
 
       <div id="dashContent">
-        <div class="dash-page__hero">
-          <h1 class="dash-page__title">My Documents</h1>
-          <p class="dash-page__subtitle">All your proposals, invoices, and requirement questionnaires</p>
+        <div class="dash-hero">
+          <div class="dash-hero__text">
+            <h1 class="dash-page__title" id="dashGreeting">Welcome back</h1>
+            <p class="dash-page__subtitle">Pick up where you left off, start from a template, or create something new.</p>
+          </div>
+          <div class="dash-hero__actions">
+            <a class="btn btn--primary" href="index.html">+ New proposal</a>
+            <a class="btn btn--ghost" href="requirements.html">New requirements</a>
+            <a class="btn btn--ghost" href="index.html?mode=invoice">New invoice</a>
+          </div>
         </div>
 
-        <div class="dash-page__controls">
+        <section class="dash-section" id="templatesSection">
+          <div class="dash-section__head">
+            <h2 class="dash-section__title">Start from a template</h2>
+            <p class="dash-section__sub">Industry-tailored starting points — scope, deliverables, and pricing prefilled.</p>
+          </div>
+          <div id="templateGrid" class="tmpl-grid"></div>
+        </section>
+
+        <section class="dash-section">
+          <div class="dash-section__head">
+            <h2 class="dash-section__title">Your documents</h2>
+            <p class="dash-section__sub">All your proposals, invoices, and requirement questionnaires.</p>
+          </div>
+
+          <div class="dash-page__controls">
           <div class="dash-page__tabs" role="tablist">
             <button type="button" class="dash-page__tab dash-page__tab--active" data-type="all" role="tab" aria-selected="true">All</button>
             <button type="button" class="dash-page__tab" data-type="proposal" role="tab" aria-selected="false">Proposals</button>
@@ -71,14 +99,15 @@
           <input id="dashSearch" class="input dash-page__search" type="search" placeholder="Search by title, client, or doc no." />
         </div>
 
-        <div id="dashGrid" class="dash-page__grid">
-          <p class="dash-page__empty">Loading…</p>
-        </div>
+          <div id="dashGrid" class="dash-page__grid">
+            <p class="dash-page__empty">Loading…</p>
+          </div>
+        </section>
       </div>
 
     </main>
   </div>
 
-  <script type="module" src="dashboard.js?v=10"></script>
+  <script type="module" src="dashboard.js?v=11"></script>
 </body>
 </html>

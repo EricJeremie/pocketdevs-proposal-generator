@@ -796,6 +796,55 @@ button, input, textarea, select { font-family: inherit; }
 .dash-page__login h2 { font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 0.6rem; }
 .dash-page__login p { margin-bottom: 1.5rem; line-height: 1.6; max-width: 36ch; }
 
+/* ---- Member dashboard: welcome hero + sample templates ---- */
+.dash-hero {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 1.5rem; flex-wrap: wrap; margin-bottom: 2.25rem;
+}
+.dash-hero__actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+.dash-section { margin-bottom: 2.75rem; }
+.dash-section__head { margin-bottom: 1rem; }
+.dash-section__title {
+  font-size: 1.15rem; font-weight: 800; color: #0f172a; letter-spacing: -0.01em;
+}
+.dash-section__sub { font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+.tmpl-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem;
+}
+.tmpl-card {
+  display: flex; flex-direction: column; text-align: left; gap: 0.5rem;
+  padding: 1.15rem 1.2rem 1.05rem; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg-card); box-shadow: var(--shadow); cursor: pointer; width: 100%;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.tmpl-card:hover {
+  border-color: #BFDBFE; box-shadow: 0 12px 30px rgb(26 86 176 / 0.13); transform: translateY(-2px);
+}
+.tmpl-card__icon {
+  width: 2.25rem; height: 2.25rem; border-radius: 9px; display: grid; place-items: center;
+  background: var(--rausch-tint); color: var(--rausch);
+}
+.tmpl-card__icon svg { width: 1.2rem; height: 1.2rem; }
+.tmpl-card__name { font-size: 0.95rem; font-weight: 700; color: #0f172a; }
+.tmpl-card__summary { font-size: 0.8125rem; color: var(--text-muted); line-height: 1.45; }
+.tmpl-card__items { list-style: none; padding: 0; margin: 0.1rem 0 0; display: grid; gap: 0.32rem; }
+.tmpl-card__items li {
+  font-size: 0.78rem; color: var(--text-muted); padding-left: 1.05rem; position: relative;
+}
+.tmpl-card__items li::before {
+  content: ""; position: absolute; left: 0; top: 0.42em; width: 0.42rem; height: 0.42rem;
+  border-radius: 999px; background: #93C5FD;
+}
+.tmpl-card__cta {
+  margin-top: 0.4rem; font-size: 0.8125rem; font-weight: 700; color: var(--rausch);
+}
+@media (max-width: 640px) {
+  .dash-hero { flex-direction: column; align-items: stretch; }
+  .tmpl-grid { grid-template-columns: 1fr; }
+}
+
 /* ---- Hamburger ---- */
 .appbar__hamburger {
   display: none;

@@ -28,7 +28,7 @@ function safeNext(value) {
   if (/^(https?:)?\/\//i.test(value) || value.startsWith('/')) return null;
   return value;
 }
-const NEXT = safeNext(params.get('next')) || 'index.html';
+const NEXT = safeNext(params.get('next')) || 'dashboard.html';
 
 const form = $('authForm');
 const heading = $('authHeading');

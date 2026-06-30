@@ -13,6 +13,7 @@ import {
   industryOptionsHtml,
   industryQuestionsHtml,
   isIndustryMetadataComplete,
+  getIndustryTemplates,
 } from './industry-profiles.js?v=1';
 
 const $ = (id) => document.getElementById(id);
@@ -168,6 +169,32 @@ function renderGrid(items) {
   });
 }
 
+/* Sample templates — industry-tailored starting points (one click into the generator). */
+function renderTemplates() {
+  const grid = $('templateGrid');
+  if (!grid) return;
+  const templates = getIndustryTemplates();
+  grid.innerHTML = templates.map((t) => {
+    const items = (t.scopeItems || []).slice(0, 3).map((s) => `<li>${esc(s)}</li>`).join('');
+    return `
+      <button type="button" class="tmpl-card" data-template="${esc(t.id)}">
+        <span class="tmpl-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </span>
+        <span class="tmpl-card__name">${esc(t.name)}</span>
+        <span class="tmpl-card__summary">${esc(t.summary || '')}</span>
+        <ul class="tmpl-card__items">${items}</ul>
+        <span class="tmpl-card__cta">Use template &rarr;</span>
+      </button>
+    `;
+  }).join('');
+  grid.querySelectorAll('.tmpl-card').forEach((el) => {
+    el.addEventListener('click', () => {
+      window.location.href = `index.html?template=${encodeURIComponent(el.dataset.template)}`;
+    });
+  });
+}
+
 async function loadAll() {
   const grid = $('dashGrid');
   grid.innerHTML = '<p class="dash-page__empty">Loading…</p>';
@@ -229,6 +256,12 @@ async function updateAuthState(session) {
     // Hide auth gate, show app
     if (authGate) authGate.hidden = true;
     if (appBody) appBody.style.visibility = 'visible';
+    const greetingEl = $('dashGreeting');
+    if (greetingEl) {
+      const fullName = (session.user.user_metadata && session.user.user_metadata.full_name) || '';
+      const first = fullName.trim().split(/\s+/)[0] || (session.user.email || '').split('@')[0];
+      greetingEl.textContent = first ? `Welcome back, ${first}` : 'Welcome back';
+    }
     loadAll();
   } else {
     // Show auth gate
@@ -317,6 +350,7 @@ function init() {
     applyFilter();
   });
 
+  renderTemplates();
   initLayout({ activePage: 'dashboard' });
   createQuickSearch({
     buttonId: 'dashQuickSearchBtn',

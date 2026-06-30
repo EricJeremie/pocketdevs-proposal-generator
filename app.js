@@ -3293,6 +3293,14 @@ function init() {
     if (modeParam === 'invoice') setMode('invoice');
     else if (modeParam === 'proposal') setMode('proposal');
 
+    // Apply a sample template chosen from the dashboard (?template=<id>).
+    const templateParam = new URLSearchParams(window.location.search).get('template');
+    if (templateParam && allTemplates().some((t) => t.id === templateParam)) {
+      $('templateSelect').value = templateParam;
+      renderTemplatePreview();
+      applyTemplate();
+    }
+
     const activeMode = modeParam === 'invoice' ? 'invoice' : 'proposal';
     initLayout({
       activePage: activeMode,
