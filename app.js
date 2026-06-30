@@ -2799,6 +2799,15 @@ async function loadOwnedDoc(row) {
 }
 
 /* ---------- History ---------- */
+// Tracks whether the generator is in proposal or invoice mode. Seeded from the
+// URL so the history panel is correct even before setMode() runs.
+let currentMode = new URLSearchParams(window.location.search).get('mode') === 'invoice' ? 'invoice' : 'proposal';
+
+function updateHistoryTitle() {
+  const title = $('historyTitle');
+  if (title) title.textContent = currentMode === 'invoice' ? 'My Invoices' : 'My Proposals';
+}
+
 function approvalBadgeHtml(content) {
   if (!content || content.docType === 'invoice') return '';
   const status = ensureInternal(content).approval.status || 'draft';
@@ -2812,40 +2821,39 @@ function historyItemHtml(p) {
         <div class="history-item__title">${esc(p.project_title || 'Untitled')} ${approvalBadgeHtml(p.content)}</div>
         <div class="history-item__meta">${esc(p.client_name || '')} · ${esc(p.doc_number || '')}</div>
       </div>
-      <button type="button" class="history-item__delete" title="Delete proposal" aria-label="Delete proposal">&times;</button>
+      <button type="button" class="history-item__delete" title="Delete document" aria-label="Delete document">&times;</button>
     </div>
   `;
-}
-function historyGroupHtml(label, items) {
-  if (!items.length) return '';
-  return `<div class="history-group">
-    <div class="history-group__label">${label}</div>
-    ${items.map(historyItemHtml).join('')}
-  </div>`;
 }
 
 async function refreshHistory() {
   const list = $('historyList');
+  updateHistoryTitle();
+  const isInvoice = currentMode === 'invoice';
+  const noun = isInvoice ? 'invoice' : 'proposal';
   try {
     const items = await fetchUserProposals();
-    if (!items || !items.length) {
-      list.innerHTML = '<p class="card__hint">No proposals saved yet.</p>';
+    // Show only the documents that belong to the current page (proposals vs invoices).
+    const docs = (items || []).filter((p) => {
+      const docIsInvoice = !!(p.content && p.content.docType === 'invoice');
+      return isInvoice ? docIsInvoice : !docIsInvoice;
+    });
+    if (!docs.length) {
+      list.innerHTML = `<p class="card__hint">No ${noun}s saved yet.</p>`;
       return;
     }
-    const proposals = items.filter((p) => !(p.content && p.content.docType === 'invoice'));
-    const invoices = items.filter((p) => p.content && p.content.docType === 'invoice');
-    list.innerHTML = historyGroupHtml('Proposals', proposals) + historyGroupHtml('Invoices', invoices);
+    list.innerHTML = docs.map(historyItemHtml).join('');
 
     list.querySelectorAll('.history-item').forEach(el => {
       el.querySelector('.history-item__body').onclick = () => {
-        const p = items.find(i => i.id === el.dataset.id);
+        const p = docs.find(i => i.id === el.dataset.id);
         if (p && p.content) loadOwnedDoc(p);
       };
       el.querySelector('.history-item__delete').onclick = async (e) => {
         e.stopPropagation();
-        if (!confirm('Delete this saved proposal? This cannot be undone.')) return;
+        if (!confirm(`Delete this saved ${noun}? This cannot be undone.`)) return;
         const { error } = await deleteProposal(el.dataset.id);
-        if (error) { alert('Could not delete proposal: ' + (error.message || error)); return; }
+        if (error) { alert(`Could not delete ${noun}: ` + (error.message || error)); return; }
         refreshHistory();
       };
     });
@@ -3137,6 +3145,11 @@ async function openQuickSearchResult(item) {
 
 /* ---------- Mode switching ---------- */
 function setMode(mode) {
+  const next = mode === 'invoice' ? 'invoice' : 'proposal';
+  const changed = next !== currentMode;
+  currentMode = next;
+  updateHistoryTitle();
+
   document.querySelectorAll('.mode-tab').forEach((tab) => {
     const active = tab.dataset.mode === mode;
     tab.classList.toggle('mode-tab--active', active);
@@ -3146,6 +3159,9 @@ function setMode(mode) {
     if (el.classList.contains('mode-tab')) return;
     el.hidden = el.dataset.mode !== mode;
   });
+
+  // When the mode changes in-page (e.g. opening an invoice), re-filter the panel.
+  if (changed) refreshHistory();
 }
 
 function openInternalTab(tab) {
