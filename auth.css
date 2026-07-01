@@ -417,34 +417,89 @@ body.page-auth {
 .auth-foot button:hover { text-decoration-color: var(--light); }
 
 /* ============================================================
-   Typeform-style sign-up flow (one question at a time)
+   Typeform-style sign-up flow — full-screen takeover
    ============================================================ */
-.tf { display: block; }
+.tf {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 84% 12%, rgba(96, 165, 250, 0.22), transparent 26rem),
+    radial-gradient(circle at 8% 90%, rgba(26, 86, 176, 0.4), transparent 30rem),
+    linear-gradient(158deg, #050f24 0%, #0b1f44 56%, #122d63 110%);
+  opacity: 0;
+  transform: scale(0.965);
+  transition: opacity 0.42s var(--ease), transform 0.42s var(--ease);
+  pointer-events: none;
+}
+
 .tf[hidden] { display: none; }
+.tf.is-open { opacity: 1; transform: none; pointer-events: auto; }
+
+body.tf-open { overflow: hidden; }
 
 .tf__bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
   height: 4px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   overflow: hidden;
-  margin: 0.2rem 0 1.9rem;
+  z-index: 2;
 }
 
 .tf__bar-fill {
   display: block;
   height: 100%;
   width: 0;
-  border-radius: 999px;
   background: linear-gradient(90deg, var(--blue), var(--sky));
   transition: width 0.45s var(--ease);
 }
 
-.tf__stage {
-  position: relative;
-  min-height: 19rem;
+.tf__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(1.3rem, 3vw, 2.1rem) clamp(1.4rem, 4vw, 3rem) 0;
 }
 
-.tf__status { margin-top: 1rem; }
+.tf__brand img { height: 1.7rem; width: auto; display: block; }
+
+.tf__close {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: color 0.2s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.tf__close:hover { color: var(--white); background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.32); }
+.tf__close svg { width: 1rem; height: 1rem; }
+
+.tf__center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1.5rem clamp(1.4rem, 6vw, 3rem) clamp(2rem, 6vh, 4rem);
+  overflow-y: auto;
+}
+
+.tf__stage { position: relative; width: 100%; max-width: 40rem; }
+.tf__status { width: 100%; max-width: 40rem; margin-top: 1rem; }
+
+.tf .tf-q__label { font-size: clamp(1.55rem, 4.4vw, 2.45rem); }
 
 /* One question card — animates up into place on each step. */
 .tf-q {
@@ -618,6 +673,7 @@ body.page-auth {
 .tf-q__actions .btn { width: auto; }
 
 @media (prefers-reduced-motion: reduce) {
+  .tf { transition: none; }
   .tf-q { transition: none; transform: none; opacity: 1; }
   .tf__bar-fill { transition: none; }
 }

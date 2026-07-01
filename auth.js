@@ -65,9 +65,9 @@ const signupFlow = $('signupFlow');
 const tfStage = $('tfStage');
 const tfFill = $('tfFill');
 const tfStatus = $('tfStatus');
+const tfClose = $('tfClose');
 const tabLogin = $('tabLogin');
 const tabSignup = $('tabSignup');
-const foot = $('authFoot');
 
 /* If a valid session already exists, skip the form and go straight in. */
 (async () => {
@@ -168,7 +168,8 @@ function renderSlide(dir = 1) {
   tfFill.style.width = `${Math.round((idx / Math.max(1, totalSteps() - 1)) * 100)}%`;
 
   const slideEl = tfStage.firstElementChild;
-  requestAnimationFrame(() => slideEl.classList.add('is-in'));
+  void slideEl.offsetWidth; // commit the pre-animation state, then transition in
+  slideEl.classList.add('is-in');
 
   if (q.type === 'choice') {
     slideEl.querySelectorAll('.tf-choice').forEach((btn) => {
@@ -249,7 +250,9 @@ function renderMessage(title, sub) {
       <h2 class="tf-q__label">${esc(title)}</h2>
       ${sub ? `<p class="tf-q__hint">${esc(sub)}</p>` : ''}
     </div>`;
-  requestAnimationFrame(() => tfStage.firstElementChild.classList.add('is-in'));
+  const el = tfStage.firstElementChild;
+  void el.offsetWidth;
+  el.classList.add('is-in');
 }
 
 async function submit() {
@@ -293,32 +296,43 @@ async function submit() {
   }
 }
 
-/* ---------- Mode switching (Login / Sign up) ---------- */
-function applyMode(target) {
-  mode = target === 'signup' ? 'signup' : 'login';
-  const su = mode === 'signup';
+/* ---------- Full-screen sign-up takeover ---------- */
+let closeTimer = 0;
 
-  tabLogin.setAttribute('aria-selected', String(!su));
-  tabSignup.setAttribute('aria-selected', String(su));
-  loginForm.hidden = su;
-  signupFlow.hidden = !su;
+function openSignup() {
+  mode = 'signup';
+  tabLogin.setAttribute('aria-selected', 'false');
+  tabSignup.setAttribute('aria-selected', 'true');
+  clearTimeout(closeTimer);
 
-  foot.innerHTML = su
-    ? 'Already have an account? <button type="button" id="switchMode" data-target="login">Sign in</button>'
-    : 'New to Propello? <button type="button" id="switchMode" data-target="signup">Create an account</button>';
-  $('switchMode').addEventListener('click', (e) => applyMode(e.currentTarget.dataset.target));
+  signupFlow.hidden = false;
+  document.body.classList.add('tf-open');
+  // Commit the hidden→shown initial state (opacity:0, scaled) with a reflow,
+  // then add the class in the same tick so the transition animates in. Doing
+  // this synchronously (not via rAF) keeps it working even in background tabs.
+  void signupFlow.offsetWidth;
+  signupFlow.classList.add('is-open');
 
-  if (su) {
-    if (answers.industry) rebuildTailoring();
-    renderSlide(0);
-  } else {
-    setLoginStatus('', '');
-  }
+  if (answers.industry) rebuildTailoring();
+  renderSlide(0);
+}
+
+function closeSignup() {
+  mode = 'login';
+  tabLogin.setAttribute('aria-selected', 'true');
+  tabSignup.setAttribute('aria-selected', 'false');
+  signupFlow.classList.remove('is-open');
+  document.body.classList.remove('tf-open');
+  setLoginStatus('', '');
+  clearTimeout(closeTimer);
+  closeTimer = setTimeout(() => { signupFlow.hidden = true; }, 460);
 }
 
 /* ---------- Wiring ---------- */
-tabLogin.addEventListener('click', () => applyMode('login'));
-tabSignup.addEventListener('click', () => applyMode('signup'));
+tabLogin.addEventListener('click', closeSignup);
+tabSignup.addEventListener('click', openSignup);
+tfClose.addEventListener('click', closeSignup);
+$('switchMode').addEventListener('click', openSignup);
 
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -351,9 +365,10 @@ $('loginEye').addEventListener('click', () => {
   b.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
 });
 
-// Keyboard: Enter advances; letters/numbers pick a choice.
+// Keyboard: Esc closes; Enter advances; letters/numbers pick a choice.
 document.addEventListener('keydown', (e) => {
   if (mode !== 'signup' || signupFlow.hidden || submitting) return;
+  if (e.key === 'Escape') { e.preventDefault(); closeSignup(); return; }
   const q = slides[idx];
   if (!q) return;
   if (e.key === 'Enter') { e.preventDefault(); next(); return; }
@@ -365,5 +380,5 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Initialise from the URL (?mode=signup) on load.
-applyMode(mode);
+// Open the full-screen sign-up immediately if arrived via ?mode=signup.
+if (mode === 'signup') openSignup();
