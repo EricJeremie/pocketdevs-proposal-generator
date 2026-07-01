@@ -3074,6 +3074,9 @@ function downloadPDF() {
     if (!ok) return;
   }
   const docNo = document.querySelector('.js-doc-no')?.innerText?.trim() || 'PD-PROPOSAL';
+  // Add a safe gutter inside the captured element so edge-aligned content isn't
+  // shaved off at the canvas boundary (see .proposal.pdf-exporting).
+  element.classList.add('pdf-exporting');
   const opt = {
     margin: [15, 15],
     filename: `${docNo}.pdf`,
@@ -3082,8 +3085,13 @@ function downloadPDF() {
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     // 'avoid-all' forces every element to avoid splitting, which can leave whole
     // pages blank for page-spanning content; 'css'+'legacy' lets sections flow
-    // across pages while `avoid` keeps small atomic blocks intact.
-    pagebreak: { mode: ['css', 'legacy'], avoid: ['.p-party', '.p-sign', '.p-table tr', '.p-term'] }
+    // across pages while `avoid` keeps atomic blocks (bullets, paragraphs, rows,
+    // signatures) whole so a page break never slices through a line of text.
+    pagebreak: {
+      mode: ['css', 'legacy'],
+      avoid: ['.p-list li', '.p-section p', '.p-lede', '.p-scope__group', '.p-section__head',
+        '.p-party', '.p-parties', '.p-sign', '.p-term', '.p-paymethod', '.p-table tr', '.p-note'],
+    },
   };
   setStatus('working', '<span class="spinner"></span>Generating PDF file...');
   // If the page is scrolled when "Download PDF" is clicked, html2canvas's
@@ -3094,9 +3102,10 @@ function downloadPDF() {
   // top before capture — and restoring afterward — avoids that entirely.
   const restoreY = window.scrollY;
   window.scrollTo(0, 0);
+  const cleanup = () => { element.classList.remove('pdf-exporting'); window.scrollTo(0, restoreY); };
   html2pdf().set(opt).from(element).save()
-    .then(() => { window.scrollTo(0, restoreY); setStatus('ok', 'PDF downloaded successfully!'); })
-    .catch(err => { window.scrollTo(0, restoreY); setStatus('error', `PDF generation failed: ${err.message}`); });
+    .then(() => { cleanup(); setStatus('ok', 'PDF downloaded successfully!'); })
+    .catch(err => { cleanup(); setStatus('error', `PDF generation failed: ${err.message}`); });
 }
 
 /* ---------- Date helpers ---------- */

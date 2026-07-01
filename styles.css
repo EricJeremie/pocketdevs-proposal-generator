@@ -713,6 +713,13 @@ button, input, textarea, select { font-family: inherit; }
   font-family: 'Inter', sans-serif; font-size: 11pt; line-height: 1.4;
 }
 
+/* Applied only while exporting to PDF. html2pdf captures #proposal directly
+   (the 20mm paper padding lives on the parent .paper-wrap, which isn't
+   captured), so edge-aligned content — the right-aligned header, the top
+   logo — would otherwise sit on the canvas boundary and get shaved off.
+   This padding keeps a safe gutter inside the captured element. */
+.proposal.pdf-exporting { padding: 14px 16px; }
+
 .p-cover__logo { height: 32px; margin-bottom: 2rem; }
 .p-title { font-size: 2.5rem; font-weight: 800; margin-bottom: 2rem; color: #0f172a; }
 .p-section__head { display: flex; align-items: center; gap: 1rem; margin: 2rem 0 1rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.5rem; }
