@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="marketing.css?v=5" />
+  <link rel="stylesheet" href="marketing.css?v=4" />
 </head>
 <body class="marketing-page page-home">
   <!-- Fixed WebGL backdrop: sits behind all content (see #bg-canvas in marketing.css) -->
@@ -136,21 +136,87 @@
       <div class="benefit-cards shell">
         <article class="visual-card" data-reveal>
           <div class="card-art" aria-hidden="true">
-            <img class="card-art__img" src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&h=600&q=80" alt="" loading="lazy" />
+            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="ai-page" x1="50" y1="36" x2="150" y2="174" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#EFF5FF"/><stop offset="1" stop-color="#BFD7FF"/>
+                </linearGradient>
+                <linearGradient id="ai-spark" x1="132" y1="20" x2="184" y2="74" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#93C5FD"/><stop offset="1" stop-color="#1A56B0"/>
+                </linearGradient>
+              </defs>
+              <g transform="rotate(-6 100 105)">
+                <rect x="50" y="40" width="100" height="132" rx="13" fill="url(#ai-page)"/>
+                <rect x="65" y="60" width="44" height="11" rx="5.5" fill="#1A56B0"/>
+                <rect x="65" y="84" width="70" height="7" rx="3.5" fill="#9FB6D8"/>
+                <rect x="65" y="100" width="58" height="7" rx="3.5" fill="#9FB6D8"/>
+                <rect x="65" y="116" width="70" height="7" rx="3.5" fill="#C6D5EE"/>
+                <rect x="65" y="132" width="38" height="7" rx="3.5" fill="#C6D5EE"/>
+              </g>
+              <path d="M158 22 Q163 46 186 51 Q163 56 158 80 Q153 56 130 51 Q153 46 158 22 Z" fill="url(#ai-spark)"/>
+            </svg>
           </div>
           <h3>AI drafting</h3>
           <p>Generate a structured proposal from a brief, RFP, or messy internal notes.</p>
         </article>
         <article class="visual-card" data-reveal data-reveal-delay="100">
           <div class="card-art" aria-hidden="true">
-            <img class="card-art__img" src="https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=600&h=600&q=80" alt="" loading="lazy" />
+            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="sc-panel" x1="46" y1="44" x2="154" y2="156" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#EFF5FF"/><stop offset="1" stop-color="#BFD7FF"/>
+                </linearGradient>
+                <linearGradient id="sc-check" x1="0" y1="0" x2="1" y2="1">
+                  <stop stop-color="#3B82F6"/><stop offset="1" stop-color="#1A56B0"/>
+                </linearGradient>
+              </defs>
+              <g transform="rotate(-4 100 100)">
+                <rect x="46" y="46" width="108" height="108" rx="16" fill="url(#sc-panel)"/>
+                <g>
+                  <rect x="62" y="64" width="21" height="21" rx="6" fill="url(#sc-check)"/>
+                  <path d="M67 74.5 l3.5 3.5 l7 -7.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="92" y="71" width="50" height="8" rx="4" fill="#9FB6D8"/>
+                </g>
+                <g>
+                  <rect x="62" y="92" width="21" height="21" rx="6" fill="url(#sc-check)"/>
+                  <path d="M67 102.5 l3.5 3.5 l7 -7.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="92" y="99" width="42" height="8" rx="4" fill="#9FB6D8"/>
+                </g>
+                <g>
+                  <rect x="62" y="120" width="21" height="21" rx="6" fill="#C6D5EE"/>
+                  <path d="M67 130.5 l3.5 3.5 l7 -7.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="92" y="127" width="50" height="8" rx="4" fill="#C6D5EE"/>
+                </g>
+              </g>
+            </svg>
           </div>
           <h3>Scope clarity</h3>
           <p>Turn deliverables, exclusions, and assumptions into reusable blocks.</p>
         </article>
         <article class="visual-card" data-reveal data-reveal-delay="200">
           <div class="card-art" aria-hidden="true">
-            <img class="card-art__img" src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=600&h=600&q=80" alt="" loading="lazy" />
+            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="pr-panel" x1="48" y1="34" x2="152" y2="166" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#EFF5FF"/><stop offset="1" stop-color="#BFD7FF"/>
+                </linearGradient>
+                <linearGradient id="pr-total" x1="60" y1="128" x2="140" y2="152" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#3B82F6"/><stop offset="1" stop-color="#1A56B0"/>
+                </linearGradient>
+              </defs>
+              <g transform="rotate(5 100 100)">
+                <rect x="50" y="34" width="100" height="132" rx="14" fill="url(#pr-panel)"/>
+                <rect x="64" y="50" width="38" height="9" rx="4.5" fill="#1A56B0"/>
+                <rect x="64" y="74" width="34" height="6.5" rx="3.25" fill="#9FB6D8"/>
+                <rect x="116" y="74" width="20" height="6.5" rx="3.25" fill="#C6D5EE"/>
+                <rect x="64" y="90" width="40" height="6.5" rx="3.25" fill="#9FB6D8"/>
+                <rect x="120" y="90" width="16" height="6.5" rx="3.25" fill="#C6D5EE"/>
+                <rect x="64" y="106" width="30" height="6.5" rx="3.25" fill="#9FB6D8"/>
+                <rect x="118" y="106" width="18" height="6.5" rx="3.25" fill="#C6D5EE"/>
+                <rect x="64" y="128" width="72" height="24" rx="7" fill="url(#pr-total)"/>
+                <text x="72" y="144" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#fff">&#8369;260k</text>
+              </g>
+            </svg>
           </div>
           <h3>Pricing control</h3>
           <p>Keep line items, package logic, totals, and PHP pricing visible.</p>
@@ -165,9 +231,9 @@
             <p>Propello structures scope, deliverables, terms, and milestones automatically so your team moves from brief to draft without formatting drag.</p>
             <a class="btn btn--dark" href="auth.html?mode=signup">Get started <span class="btn-dot" aria-hidden="true">+</span></a>
           </div>
-          <div class="story-row__image" data-reveal data-reveal-delay="140" aria-hidden="true">
+          <div class="story-row__image story-row__image--stack" data-reveal data-reveal-delay="140" aria-hidden="true">
             <span class="story-number">01</span>
-            <img class="story-row__img" src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&h=800&q=80" alt="" loading="lazy" />
+            <i></i><i></i><i></i>
           </div>
         </article>
 
@@ -178,9 +244,11 @@
             <p>Every line item, package, total, and note stays visible before export, so proposals are easier to approve and easier to explain.</p>
             <a class="btn btn--dark" href="auth.html?mode=signup">Get started <span class="btn-dot" aria-hidden="true">+</span></a>
           </div>
-          <div class="story-row__image" data-reveal data-reveal-delay="140" aria-hidden="true">
+          <div class="story-row__image story-row__image--pricing" data-reveal data-reveal-delay="140" aria-hidden="true">
             <span class="story-number">02</span>
-            <img class="story-row__img" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&h=800&q=80" alt="" loading="lazy" />
+            <div><span>Discovery</span><b>₱45,000</b></div>
+            <div><span>Implementation</span><b>₱140,000</b></div>
+            <div><span>Review support</span><b>₱75,000</b></div>
           </div>
         </article>
 
@@ -191,9 +259,9 @@
             <p>Apply logo, proposal color, industry profile, terminology, and reusable blocks in one flow, then export a clean PDF ready to share.</p>
             <a class="btn btn--dark" href="auth.html?mode=signup">Get started <span class="btn-dot" aria-hidden="true">+</span></a>
           </div>
-          <div class="story-row__image" data-reveal data-reveal-delay="140" aria-hidden="true">
+          <div class="story-row__image story-row__image--brand" data-reveal data-reveal-delay="140" aria-hidden="true">
             <span class="story-number">03</span>
-            <img class="story-row__img" src="https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=1200&h=800&q=80" alt="" loading="lazy" />
+            <i></i><i></i><i></i><i></i>
           </div>
         </article>
       </div>
